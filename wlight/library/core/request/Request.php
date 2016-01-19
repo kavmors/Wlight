@@ -11,7 +11,6 @@ use wlight\runtime\Log;
 include (DIR_ROOT.'/wlight/library/runtime/Log.class.php');
 
 Log::getInstance()->start();
-Log::getInstance()->i('IP', $_SERVER['HTTP_X_FORWARDED_FOR']);
 
 $currentDir = DIR_ROOT.'/wlight/library/core/request';
 

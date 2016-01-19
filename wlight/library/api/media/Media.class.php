@@ -14,6 +14,9 @@ class Media {
   private $url = 'https://api.weixin.qq.com/cgi-bin/media';
   private $accessToken;
 
+  /**
+   * @throws ApiException
+   */
   public function __construct() {
     include_once (self::getDirRoot().'/wlight/library/api/basic/AccessToken.class.php');
     include_once (self::getDirRoot().'/wlight/library/util/HttpClient.class.php');

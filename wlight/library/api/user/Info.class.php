@@ -17,6 +17,9 @@ class Info {
   private $accessToken;
   private $nextOpenId='';
 
+  /**
+   * @throws ApiException
+   */
 	public function __construct() {
     include_once (self::getDirRoot().'/wlight/library/api/basic/AccessToken.class.php');
     include_once (self::getDirRoot().'/wlight/library/util/HttpClient.class.php');

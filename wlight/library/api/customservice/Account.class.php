@@ -15,6 +15,9 @@ class Account {
   private $accessToken;
   private $postfix;
 
+  /**
+   * @throws ApiException
+   */
 	public function __construct() {
     include_once (self::getDirRoot().'/wlight/library/api/basic/AccessToken.class.php');
     include_once (self::getDirRoot().'/wlight/library/util/HttpClient.class.php');

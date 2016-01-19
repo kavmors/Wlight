@@ -330,7 +330,9 @@ API类库位于/wlight/library/api，辅助类位于/wlight/library/util。为�
 - **basic**: AccessToken, IpList, JsapiTicket
 - **customservice**: Account, Message
 - **media**: Media
+- **menu**: Menu, MenuDesigner
 - **user**: Groups, Info
+- **web**: JsapiTicket, Jssdk, Oauth, OauthRedirect
 - **util**: DbHelper, HttpClient
 
 ## **导入API类** ##
@@ -374,10 +376,11 @@ API类库位于/wlight/library/api，辅助类位于/wlight/library/util。为�
 
 ApiException中框架定义的错误码及说明如下：
 
-- **HTTP\_ERROR\_CODE**：-101，Http请求出错
-- **JSON\_DECODE\_ERROR\_CODE**：-102，json格式出错
-- **ILLEGAL\_JSON\_ERROR\_CODE**：-103，json内含字段出错
-- **FILE\_NOT\_EXISTS\_ERROR\_CODE**：-104，上传文件不存在
+- **HTTP\_ERROR\_CODE**: -101，Http请求出错
+- **JSON\_DECODE\_ERROR\_CODE**: -102，json格式出错
+- **ILLEGAL\_JSON\_ERROR\_CODE**: -103，json内含字段出错
+- **FILE\_NOT\_EXISTS\_ERROR\_CODE**: -104，上传文件不存在
+- **OAUTH\_REJECT\_ERROR\_CODE**: -105，用户拒绝授权
 
 其他错误码请参考[微信公众平台开发者文档-全局返回码说明](http://mp.weixin.qq.com/wiki/17/fa4e1434e57290788bde25603fa2fcbd.html)
 
@@ -619,6 +622,107 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	*/
 	public function download($mediaId, $toFile=null)
 
+## **menu** ##
+
+自定义菜单开发接口。
+
+### **Menu** ###
+
+[自定义菜单创建](http://mp.weixin.qq.com/wiki/10/0234e39a2025342c17a7d23595c6b40a.html)、[自定义菜单查询](http://mp.weixin.qq.com/wiki/5/f287d1a5b78a35a8884326312ac3e4ed.html)、[自定义菜单删除](http://mp.weixin.qq.com/wiki/3/de21624f2d0d3dafde085dafaa226743.html)、[个性化菜单接口](http://mp.weixin.qq.com/wiki/0/c48ccd12b69ae023159b4bfaa7c39c20.html)
+
+	/**
+	* 创建自定义菜单(默认或个性化菜单)
+	* @param array $menu - 自定义菜单内容数组
+	* @param array $condition - 可选, 个性化菜单的用户组条件, 不填则创建默认菜单
+	* @return boolean/string - 创建默认菜单时,成功返回true;创建个性化菜单时,成功返回menuid
+	* @throws ApiException
+	*/
+	public function create($menu, $condition=null)
+	
+	/**
+	* 查询自定义菜单(结果包含默认和个性化菜单)
+	* @param boolean $assocArray - 可选,false则直接返回API的结果(默认true返回解析后的数组)
+	* @return string/array - 查询后的结果
+	* @throws ApiException
+	*/
+	public function get($assocArray = true)
+	
+	/**
+	* 删除自定义菜单(默认或个性化)
+	* @param string $menuId - 可选,个性化菜单的menuid,不填则删除所有菜单(包括默认和个性化)
+	* @return boolean - 删除成功时返回true
+	* @throws ApiException
+	*/
+	public function delete($menuId=null)
+	
+	/**
+	* 测试个性化菜单
+	* @param string $userId - 用户openId或微信号
+	* @param boolean $assocArray - 可选,false则直接返回API的结果(默认true返回解析后的数组)
+	* @return string/array - 查询后的结果
+	*/
+	public function test($userId, $assocArray=true)
+
+### **MenuDesigner** ###
+
+菜单设计辅助类
+
+	/**
+	* 获取通过本类方法生成的菜单数组
+	* @return array - 菜单数组
+	*/
+	public function getMenu()
+	
+	/**
+	* 添加一个子菜单
+	* @param string $name - 子菜单标题
+	* @param array $subButton - 子菜单数组, 可通过本类生成
+	* @return array - 菜单生成数组
+	*/
+	public function addSubButton($name, $subButton)
+	
+	/**
+	* 添加一个CLICK类型菜单
+	* @param string $name - 菜单标题
+	* @param string $key - 菜单key值
+	* @return array - 菜单生成数组
+	*/
+	public function addClick($name, $key)
+	
+	/**
+	* 添加一个VIEW类型菜单
+	* @param string $url - 网页链接
+	* @param string $name - 菜单标题
+	* @return array - 菜单生成数组
+	*/
+	public function addView($name, $url)
+	
+	/**
+	* 添加一个扫码类型菜单
+	* @param string $name - 菜单标题
+	* @param string $key - 菜单key值
+	* @param string $type - 可选,扫码操作类型,可填PUSH或WAITMSG
+	* @return array - 菜单生成数组
+	*/
+	public function addScan($name, $key, $type='scancode_push')
+	
+	/**
+	* 添加一个发图类型菜单
+	* @param string $name - 菜单标题
+	* @param string $key - 菜单key值
+	* @param string $type - 可选,发图类型,可填SYSPHOTO或PHOTO_OR_ALBUM或WEIXIN
+	* @return array - 菜单生成数组
+	*/
+	public function addPic($name, $key, $type='pic_photo_or_album')
+	
+	/**
+	* 添加一个发送位置类型菜单
+	* @param string $name - 菜单标题
+	* @param string $key - 菜单key值
+	* @return array - 菜单生成数组
+	*/
+	public function addLocation($name, $key)
+
 ## **user** ##
 
 用户与分组管理相关接口。
@@ -712,3 +816,91 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function setRemark($openId, $remark)
+
+## **web** ##
+
+Web开发相关接口。
+
+### **JsapiTicket** ###
+
+[获取JsapiTicket(调用js接口凭证)](http://mp.weixin.qq.com/wiki/11/74ad127cc054f6b80759c40f77ec03db.html#.E9.99.84.E5.BD.951-JS-SDK.E4.BD.BF.E7.94.A8.E6.9D.83.E9.99.90.E7.AD.BE.E5.90.8D.E7.AE.97.E6.B3.95)
+
+	/**
+	* 获取Jsapi Ticket(或刷新Ticket值)
+	* @param boolean $reload - true表示重新获取最新Ticket值
+	* @return string - token字符串(请求失败返回false)
+	* @throws ApiException
+	*/
+	public function get($reload = false)
+
+### **Jssdk** ###
+
+[微信内网页开发功能(jssdk)开发类库](http://mp.weixin.qq.com/wiki/11/74ad127cc054f6b80759c40f77ec03db.html)
+
+	/**
+	* 构造方法
+	* @param boolean $debug - 可选,true为开启调试模式
+	*/
+	public function __construct($debug=false)
+	
+	/**
+	* 获取jsapi接口的配置信息
+	* @param string/array $apiList - 需要使用的JS接口列表
+	* @return string - 验证配置对应的js语句,可直接在js脚本中使用
+	*/
+	public function config($apiList)
+	
+	/**
+	* 获取引入js文件的路径
+	* @param string $version - 可选,引入文件的版本号,默认1.0.0
+	* @return string - js文件路径
+	*/
+	public function getReference($version = '1.0.0')
+	
+	/**
+	* 获取引入js文件的标签
+	* @param string $version - 可选,引入文件的版本号,默认1.0.0
+	* @return string - js文件标签
+	*/
+	public function getReferenceLabel($version = '1.0.0')
+	
+	/**
+	* 获取权限签名
+	* @return array - 权限签名数组,包含appId、signature等字段
+	*/
+	public function getSignPackage()
+
+### **Oauth** ###
+
+[网页授权获取用户信息的接口](http://mp.weixin.qq.com/wiki/4/9ac2e7b1f1d22e9e57260f6553822520.html)
+
+	/**
+	* 获取scope为snsapi_basic的重定向路径(只能获取openId)
+	* @param string $extraString - 可选,开发者额外参数
+	* @return string - 重定向路径
+	*/
+	public function getBasic($extraString = '')
+	
+	/**
+	* 获取scope为snsapi_userinfo的重定向路径(获取用户具体信息)
+	* @param string $extraString - 可选,开发者额外参数
+	* @return string - 重定向路径
+	*/
+	public function getUserInfo($extraString = '')
+
+### **OauthRedirect** ###
+
+[网页授权的回调处理脚本(非框架接口)](http://mp.weixin.qq.com/wiki/4/9ac2e7b1f1d22e9e57260f6553822520.html#.E7.AC.AC.E4.BA.8C.E6.AD.A5.EF.BC.9A.E9.80.9A.E8.BF.87code.E6.8D.A2.E5.8F.96.E7.BD.91.E9.A1.B5.E6.8E.88.E6.9D.83access_token)
+
+	/**
+	* 获取基本信息(access_token及openid)
+	* @return array - 基本信息数组
+	*/
+	public function getBasic()
+	
+	/**
+	* 获取用户详细信息
+	* @param string $language - 可选,用户语言版本
+	* @return array - 详细信息数组
+	*/
+	public function getUserInfo($language='zh_CN')

@@ -13,11 +13,13 @@ class ApiException extends \Exception {
   const JSON_DECODE_ERROR_CODE = -102;
   const ILLEGAL_JSON_ERROR_CODE = -103;
   const FILE_NOT_EXISTS_ERROR_CODE = -104;
+  const OAUTH_REJECT_ERROR_CODE = -105;
 
   const HTTP_ERROR_MSG = 'failed in http request';
   const JSON_DECODE_ERROR_MSG = 'not a string in json format';
   const ILLEGAL_JSON_ERROR_MSG = 'illegal array decoded by json';
   const FILE_NOT_EXISTS_ERROR_MSG = 'file not exists in media uploading';
+  const OAUTH_REJECT_ERROR_MSG = 'authentication reject by user';
 
   private $extraInfo;
 
@@ -30,7 +32,7 @@ class ApiException extends \Exception {
    * 记录Exception信息到日志
    */
   public function log() {
-    if (!class_exists('Log')) {
+    if (!class_exists('\wlight\runtime\Log')) {
       return;
     }
     $log = Log::getInstance();

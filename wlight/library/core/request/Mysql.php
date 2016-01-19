@@ -50,8 +50,8 @@ try {
 
   $tableMap = $table.'_map';
   $link->exec("CREATE TABLE IF NOT EXISTS `$tableMap` (
-    `key` char(10) COLLATE $collation NOT NULL,
-    `map` char(10) COLLATE $collation NOT NULL,
+    `key` char(20) COLLATE $collation NOT NULL,
+    `map` varchar(30) COLLATE $collation NOT NULL,
     PRIMARY KEY(`key`)
   )");
   $link = null;

@@ -24,7 +24,6 @@ class AccessToken {
 		$this->appsecret = self::getAppSecret();
     $this->runtimeRoot = self::getRuntimeRoot();
     $this->file = $this->loadTokenRecord();
-    $this->url .= "?grant_type=client_credential&appid=$this->appid&secret=$this->appsecret";
 	}
 
 	/**
@@ -50,12 +49,12 @@ class AccessToken {
 		} else {
 			return $this->reloadToken();
 		}
-			
 	}
 
   //刷新token值
 	private function reloadToken() {
-    $httpClient = new HttpClient($this->url);
+    $url = $this->url."?grant_type=client_credential&appid=$this->appid&secret=$this->appsecret";
+    $httpClient = new HttpClient($url);
     $httpClient->get();
     if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
       throw ApiException::httpException('status code: '.$httpClient->getStatus());
@@ -81,8 +80,8 @@ class AccessToken {
 
   		return $access_token;
     } else {
-      if (isset($data['errcode'])) {
-        throw new ApiException($data['errmsg'], $data['errcode']);
+      if (isset($stream['errcode'])) {
+        throw new ApiException($stream['errmsg'], $stream['errcode']);
       } else {
         throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
       }
