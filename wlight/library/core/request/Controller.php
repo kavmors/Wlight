@@ -40,13 +40,15 @@ class Controller {
       return self::EMPTY_RESPONSE;
     }
 
-    $reply = false;   //先定空返回值
+    $this->lock();
+
+    $target = false;   //先定空返回值
     $phps = $this->getFromCache();
-    //针对有缓存情况执行,若【无缓存】或【缓存无效】应返回$reply==false
-    $reply = $this->ergodicPhps($phps);
+    //针对有缓存情况执行,若【无缓存】或【缓存无效】应返回$target==false
+    $target = $this->ergodicPhps($phps);
 
     //没有缓存或缓存不符合(即旧缓存无效)
-    if (empty($reply)) {
+    if (empty($target)) {
       $list = $this->getFromList(); //提取所有php文件
       if (is_array($phps)) {        //有缓存,但缓存无效
         //在所有php文件中删除,避免重复检验
@@ -55,12 +57,15 @@ class Controller {
         }
       }
       //执行所有遍历
-      $reply = $this->ergodicPhps($list);
+      $target = $this->ergodicPhps($list);
     }
 
     //更新缓存
     $this->updateCacheFile();
-    return $reply? $reply: self::EMPTY_RESPONSE;
+
+    $this->unlock();
+
+    return $this->invokeTarget($target);
   }
 
   //遍历所有php文件(或缓存提取的),检验(verify)后执行(invoke)
@@ -102,15 +107,23 @@ class Controller {
       $key->assign($this->postClass);
       //验证是否执行
       if ($key->verify()) {
-        //执行用户定义逻辑, 返回结果
-        $result = $key->invoke();
         $this->callStatistics(substr($classPath, strripos($classPath, "\\")+1), $key->tag());
         $this->putToCache($key->cache(), basename($phpName));
-        $key = null;
-        return $result;
+        return $key;
       }
     }
     return false;
+  }
+
+  //执行目标类中的invoke方法
+  private function invokeTarget($target) {
+    if (!$target) {
+      return self::EMPTY_RESPONSE;
+    }
+    $reply = null;
+    $reply = $target->invoke();
+    $target = null;
+    return $reply? $reply: self::EMPTY_RESPONSE;
   }
 
   //存入缓存, 仅针对类型为text和event.CLICK的消息缓存
@@ -245,6 +258,19 @@ class Controller {
     include (DIR_ROOT.'/wlight/library/statistics/Tag.class.php');
     $statistics = new \wlight\sta\Tag();
     $statistics->increase($className, $tag);
+  }
+
+  //文件锁
+  private $locker;
+
+  private function lock() {
+    $this->locker = fopen(LOCK_CACHE, 'r');
+    flock($this->locker, LOCK_EX);
+  }
+
+  private function unlock() {
+    flock($this->locker, LOCK_UN);
+    fclose($this->locker);
   }
 }
 ?>

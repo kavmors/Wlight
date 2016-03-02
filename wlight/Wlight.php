@@ -48,6 +48,7 @@ makeDirectory(RUNTIME_ROOT.'/cache');
 makeDirectory(RUNTIME_ROOT.'/log');
 makeDirectory(RUNTIME_ROOT.'/log/info');
 makeDirectory(RUNTIME_ROOT.'/log/error');
+makeDirectory(RUNTIME_ROOT.'/lock');
 makeDirectory(MSG_ROOT);
 makeDirectory(MSG_ROOT.'/text');
 makeDirectory(MSG_ROOT.'/image');
@@ -66,10 +67,24 @@ makeDirectory(MSG_ROOT.'/event/VIEW');
 makeDirectory(APP_ROOT);
 makeDirectory(RES_ROOT);
 
+//文件锁
+define('LOCK_CACHE', RUNTIME_ROOT.'/lock/cache.lock');
+define('LOCK_ACCESS_TOKEN', RUNTIME_ROOT.'/lock/access_token.lock');
+define('LOCK_JSAPI_TICKET', RUNTIME_ROOT.'/lock/jsapi_ticket.lock');
+makeFile(LOCK_CACHE);
+makeFile(LOCK_ACCESS_TOKEN);
+makeFile(LOCK_JSAPI_TICKET);
+
 function makeDirectory($dir) {
   if (!is_dir($dir)) {
     mkdir($dir);
     chmod($dir, 0777);
+  }
+}
+
+function makeFile($file) {
+  if (!file_exists($file)) {
+    file_put_contents($file, "");
   }
 }
 
