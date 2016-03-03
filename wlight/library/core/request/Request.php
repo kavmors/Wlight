@@ -137,7 +137,10 @@ function markConfig() {
     'DIR_ROOT' => DIR_ROOT,
     'MSG_ROOT' => MSG_ROOT,
     'RUNTIME_ROOT' => RUNTIME_ROOT,
-    'RES_ROOT' => RES_ROOT
+    'RES_ROOT' => RES_ROOT,
+    'LOCK_CACHE' => LOCK_CACHE,
+    'LOCK_ACCESS_TOKEN' => LOCK_ACCESS_TOKEN,
+    'LOCK_JSAPI_TICKET' => LOCK_JSAPI_TICKET
   );
   //写入配置时用php形式储存, 防止被查看
   $configStr = '<?php exit; ?>'.json_encode($config);

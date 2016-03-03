@@ -53,10 +53,13 @@ class AccessToken {
 
   //刷新token值
 	private function reloadToken() {
+    $this->lock();
+
     $url = $this->url."?grant_type=client_credential&appid=$this->appid&secret=$this->appsecret";
     $httpClient = new HttpClient($url);
     $httpClient->get();
     if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
+      $this->unlock();
       throw ApiException::httpException('status code: '.$httpClient->getStatus());
       return false;
     }
@@ -64,6 +67,7 @@ class AccessToken {
     //解析json结构
 		$stream = json_decode($httpClient->getResponse(), true);
     if (!$stream) {
+      $this->unlock();
       throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
       return false;
     }
@@ -78,14 +82,19 @@ class AccessToken {
   		file_put_contents($this->file, $file_stream);
       chmod($this->file, 0777);
 
+      $this->unlock();
+
   		return $access_token;
     } else {
+      $this->unlock();
+      
       if (isset($stream['errcode'])) {
         throw new ApiException($stream['errmsg'], $stream['errcode']);
       } else {
         throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
       }
     }
+    $this->unlock();
     return false;
 	}
 
@@ -94,6 +103,19 @@ class AccessToken {
     $str = file_get_contents($file);
     $start = stripos($str, '?>') + 2;
     return substr($str, $start);
+  }
+
+  //文件锁
+  private $locker;
+
+  private function lock() {
+    $this->locker = fopen(self::getLockAccessToken(), 'r');
+    flock($this->locker, LOCK_EX);
+  }
+
+  private function unlock() {
+    flock($this->locker, LOCK_UN);
+    fclose($this->locker);
   }
 
   //以下方法供外置应用调用本类时读取相关配置所用
@@ -121,6 +143,11 @@ class AccessToken {
   //获取RUNTIME_ROOT配置
   private static function getRuntimeRoot() {
     return defined('RUNTIME_ROOT')? RUNTIME_ROOT: \wlight\dev\Config::get('RUNTIME_ROOT');
+  }
+
+  //获取LOCK_ACCESS_TOKEN配置
+  private static function getLockAccessToken() {
+    return defined('LOCK_ACCESS_TOKEN')? LOCK_ACCESS_TOKEN: \wlight\dev\Config::get('LOCK_ACCESS_TOKEN');
   }
 }
 ?>
