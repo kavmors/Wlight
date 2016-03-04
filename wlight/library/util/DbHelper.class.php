@@ -32,15 +32,20 @@ class DbHelper {
   const USER = 'user';
   const PWD = 'pwd';
 
-  public function __construct($dbName=null) {
+  public function __construct() {
     if (defined('DB_HOST')) {
       $this->configJson = null;
     } else {
       $this->configJson = \wlight\dev\Config::getAll();
     }
-    if (!empty($dbName)) {
-      $this->set(self::DBNAME, $dbName);
-    }
+  }
+
+  /**
+   * 选择数据库
+   * @param string $dbName - 数据库名称
+   */
+  public function selectDatabase($dbName) {
+    $this->set(self::DBNAME, $dbName);
   }
 
   /**

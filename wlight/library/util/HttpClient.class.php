@@ -44,7 +44,7 @@ class HttpClient {
    * 设置请求url
    * @param string $url - 请求url
    */
-  public function __construct($url) {
+  public function setUrl($url) {
     $this->url = $url;
   }
 
