@@ -29,7 +29,8 @@ class Library {
       $namespace = "api/$namespace";
     }
     include_once(self::$root."/wlight/library/$namespace/$className.class.php");
-    return $wholeClass;
+    $instance = new $wholeClass();
+    return $instance;
   }
 
   //检查$root初始化

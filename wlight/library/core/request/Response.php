@@ -77,7 +77,8 @@ class Response {
       $namespace = "api/$namespace";
     }
     include_once(DIR_ROOT."/wlight/library/$namespace/$className.class.php");
-    return $wholeClass;
+    $instance = new $wholeClass();
+    return $instance;
   }
 
   protected final function emptyResponse() {

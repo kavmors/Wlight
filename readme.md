@@ -351,8 +351,7 @@ API类库位于/wlight/library/api，辅助类位于/wlight/library/util。为�
 可在覆盖invoke的方法体中调用import方法。以下例子展示了在invoke中返回有效access_token值：
 
 	public function invoke() {
-	  $class = $this->import('basic', 'AccessToken');
-	  $accessTokenClass = new $class();
+	  $accessTokenClass = $this->import('basic', 'AccessToken');
 	  $accessToken = $accessTokenClass->get();
 	  return $this->makeText($accessToken);
 	}
@@ -362,11 +361,10 @@ API类库位于/wlight/library/api，辅助类位于/wlight/library/util。为�
 	//假设在/application/index.php中, 需先引入Library.class.php
 	include(../wlight/develop/Library.class.php);
 
-	$class = \wlight\dev\Library::import('basic', 'AccessToken');
-	$accessTokenClass = new $class();
+	$accessTokenClass = \wlight\dev\Library::import('basic', 'AccessToken');
 	$accessToken = $accessTokenClass->get();
 
-尽管Response.import和Library.import不在同一文件中，但两者参数定义与内部实现相同。其中，$namespace为类所在的命名空间，$className为类名。通过import方法，开发者不需考虑类文件的路径及命名空间，只需根据import的返回结果新建类即可。
+Response.import和Library.import不在同一文件中，但两者参数定义与内部实现相同。其中，$namespace为类所在的命名空间，$className为类名。通过import方法，开发者不需考虑类文件的路径及命名空间，只需根据import的返回结果新建类即可。
 
 > import方法内部实现是通过$namespace和$class定位到类文件，然后调用include_once()导入该文件，并返回文件中命名空间形式的类名。如上述例子中，import导入了"/wlight/library/api/basic/AccessToken.class.php"，其返回值为"\wlight\basic\AccessToken"。因此"new $class()"相当于"new \wlight\basic\AccessToken"。
 
@@ -401,8 +399,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 
 	  public function invoke() {
 		try {
-		  $class = $this->import('basic', 'AccessToken');
-		  $accessTokenClass = new $class();
+		  $accessTokenClass = $this->import('basic', 'AccessToken');
 		  $accessToken = $accessTokenClass->get();
 		  return $this->makeText($accessToken);
 		} catch (ApiException $e) {
@@ -838,10 +835,10 @@ Web开发相关接口。
 [微信内网页开发功能(jssdk)开发类库](http://mp.weixin.qq.com/wiki/11/74ad127cc054f6b80759c40f77ec03db.html)
 
 	/**
-	* 构造方法
-	* @param boolean $debug - 可选,true为开启调试模式
+	* 设置调试模式
+	* @param boolean $debug - true为开启调试模式
 	*/
-	public function __construct($debug=false)
+	public function setDebug($debug)
 	
 	/**
 	* 获取jsapi接口的配置信息
@@ -873,6 +870,12 @@ Web开发相关接口。
 ### **Oauth** ###
 
 [网页授权获取用户信息的接口](http://mp.weixin.qq.com/wiki/4/9ac2e7b1f1d22e9e57260f6553822520.html)
+	
+	/**
+	* 设置回调后重定向url
+	* @param string $redirectUrl - 重定向url
+	*/
+	public function setRedirectUrl($redirectUrl)
 
 	/**
 	* 获取scope为snsapi_basic的重定向路径(只能获取openId)
