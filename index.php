@@ -6,6 +6,7 @@
  */
 // 检测PHP环境
 if(version_compare(PHP_VERSION,'5.3.0','<'))  die('require PHP > 5.3.0 !');
+if(defined('WLIGHT')) die('framework loaded');
 
 //定义平台变量
 define('APP_ID', '');           //应用ID
