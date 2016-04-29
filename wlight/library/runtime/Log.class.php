@@ -6,6 +6,7 @@
  */
 
 namespace wlight\runtime;
+use wlight\core\support\Recorder;
 
 class Log {
   const LOG_ROOT = RUNTIME_ROOT.'/log';
@@ -70,9 +71,10 @@ class Log {
   //写Info类信息
   private function writeInfo() {
     $file = self::LOG_ROOT.'/info/'.$this->escapeToDate().'.log.php';
-    if (!file_exists($file)) {
-      file_put_contents($file, "<?php exit; ?>\n\n");   //新建log并添加文件头, 防止被访问
-      chmod($file, 0777);
+    $writer = new Recorder($file);
+
+    if ($writer->isCreatedFile()) {
+      $writer->append("\n");
     }
 
     //日志内容
@@ -82,7 +84,7 @@ class Log {
     $info .= '[ Runtime: '. $this->getExpTime(). 's ]'."\n\n";
 
     //写入
-    file_put_contents($file, $info, FILE_APPEND);
+    $writer->append($info);
   }
 
   //写error类信息
@@ -91,9 +93,10 @@ class Log {
       return;
     }
     $file = self::LOG_ROOT.'/error/'.$this->escapeToDate().'.log.php';
-    if (!file_exists($file)) {
-      file_put_contents($file, "<?php exit; ?>\n\n");   //新建error并添加文件头, 防止被访问
-      chmod($file, 0777);
+    $writer = new Recorder($file);
+
+    if ($writer->isCreatedFile()) {
+      $writer->append("\n");
     }
 
     //日志内容
@@ -104,7 +107,7 @@ class Log {
     $info .= "\n";
 
     //写入
-    file_put_contents($file, $info, FILE_APPEND);
+    $writer->append($info);
   }
 
   //计算运行时间
@@ -136,7 +139,7 @@ class Log {
 
     $infoDir = RUNTIME_ROOT.self::LOG_ROOT.'/info';
     $errorDir = RUNTIME_ROOT.self::LOG_ROOT.'/error';
-    
+
     //列出所有log文件(.log.php)
     if (is_dir($infoDir)) {
       $infoDir = asort(glob($infoDir.'/*.log.php'));

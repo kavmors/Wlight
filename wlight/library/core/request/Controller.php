@@ -7,6 +7,8 @@
 
 namespace wlight\core;
 use wlight\runtime\Log;
+use wlight\core\support\Recorder;
+use wlight\core\support\Locker;
 
 include (DIR_ROOT.'/wlight/library/core/request/Response.php');
 
@@ -14,6 +16,7 @@ class Controller {
   const EMPTY_RESPONSE = 'success';
   private $postClass;
   private $cacheQueue = array();
+  private $locker = new Locker(LOCK_CACHE);
 
   //Constructor解析xml参数
   public function __construct($postXml) {
@@ -40,7 +43,7 @@ class Controller {
       return self::EMPTY_RESPONSE;
     }
 
-    $this->lock();
+    $locker->lock();
 
     $target = false;   //先定空返回值
     $phps = $this->getFromCache();
@@ -63,7 +66,7 @@ class Controller {
     //更新缓存
     $this->updateCacheFile();
 
-    $this->unlock();
+    $locker->unlock();
 
     return $this->invokeTarget($target);
   }
@@ -150,27 +153,25 @@ class Controller {
   private function getFromCache() {
     //检测类型
     if ($this->postClass['MsgType']=='text') {
-      $file = RUNTIME_ROOT.'/cache/msg_text.json.php';
+      $file = RUNTIME_ROOT.'/cache/msg_text.json';
       $key = $this->postClass['Content'];
     } elseif ($this->postClass['MsgType']=='event' && $this->postClass['Event']=='CLICK') {
-      $file = RUNTIME_ROOT.'/cache/msg_click.json.php';
+      $file = RUNTIME_ROOT.'/cache/msg_click.json';
       $key = $this->postClass['EventKey'];
     } else {
       return false;
     }
-    //检测文件存在
-    if (!file_exists($file)) {
-      file_put_contents($file, '<?php exit; ?>');
+
+    $writer = new Recorder($file);
+    if ($writer->isCreatedFile()) {
       return false;
     }
-    $fileContent = file_get_contents($file);
-    $jsonStr = substr($fileContent, stripos($fileContent, '?>')+2);
-    $this->cacheQueue = json_decode($jsonStr, true);
+    $this->cacheQueue = json_decode($writer->read();, true);
 
     //解析出错则重置缓存文件
     if (empty($this->cacheQueue)) {
       $this->cacheQueue = array();
-      file_put_contents($file, '<?php exit; ?>');
+      $writer->write('');
       return false;
     }
 
@@ -196,14 +197,15 @@ class Controller {
   private function updateCacheFile() {
     //检测类型
     if ($this->postClass['MsgType']=='text') {
-      $file = RUNTIME_ROOT.'/cache/msg_text.json.php';
+      $file = RUNTIME_ROOT.'/cache/msg_text.json';
     } elseif ($this->postClass['MsgType']=='event' && $this->postClass['Event']=='CLICK') {
-      $file = RUNTIME_ROOT.'/cache/msg_click.json.php';
+      $file = RUNTIME_ROOT.'/cache/msg_click.json';
     } else {
       return;
     }
     //写入
-    file_put_contents($file, '<?php exit; ?>'.json_encode($this->cacheQueue));
+    $writer = new Recorder($file);
+    $writer->write(json_encode($this->cacheQueue));
   }
 
   //列出所有php类文件
@@ -258,19 +260,6 @@ class Controller {
     include (DIR_ROOT.'/wlight/library/statistics/Tag.class.php');
     $statistics = new \wlight\sta\Tag();
     $statistics->increase($className, $tag);
-  }
-
-  //文件锁
-  private $locker;
-
-  private function lock() {
-    $this->locker = fopen(LOCK_CACHE, 'r');
-    flock($this->locker, LOCK_EX);
-  }
-
-  private function unlock() {
-    flock($this->locker, LOCK_UN);
-    fclose($this->locker);
   }
 }
 ?>

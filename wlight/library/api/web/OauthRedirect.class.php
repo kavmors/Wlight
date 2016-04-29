@@ -21,8 +21,8 @@ class OauthRedirect {
    * @throws ApiException
    */
   public function __construct() {
-    include_once (self::getDirRoot().'/wlight/library/util/HttpClient.class.php');
-    include_once (self::getDirRoot().'/wlight/library/runtime/ApiException.class.php');
+    include_once (DIR_ROOT.'/wlight/library/util/HttpClient.class.php');
+    include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
 
     if (!isset($_GET['state'])) {
       exit;
@@ -33,8 +33,8 @@ class OauthRedirect {
     }
     $this->code = $_GET['code'];
     $this->state = $_GET['state'];
-    $this->appid = $this->getAppId();
-    $this->appsecret = $this->getAppSecret();
+    $this->appid = APP_ID;
+    $this->appsecret = APP_SECRET;
   }
 
   /**
@@ -92,21 +92,6 @@ class OauthRedirect {
       return false;
     }
     return $result;
-  }
-
-  //以下方法供外置应用调用本类时读取相关配置所用
-  
-  //获取项目根目录
-  private static function getDirRoot() {
-    return defined('DIR_ROOT')? DIR_ROOT: \wlight\dev\Config::get('DIR_ROOT');
-  }
-
-  private static function getAppId() {
-    return defined('APP_ID')? APP_ID: \wlight\dev\Config::get('APP_ID');
-  }
-
-  private static function getAppSecret() {
-    return defined('APP_SECRET')? APP_SECRET: \wlight\dev\Config::get('APP_SECRET');
   }
 }
 ?>

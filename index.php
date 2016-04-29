@@ -1,8 +1,12 @@
 <?php
 /**
+ * Wlight - 面向开发的微信公众平台开发框架
+ * Github - https://github.com/kavmors/Wlight
+ *
  * 应用入口文件
  * @author  KavMors(kavmors@163.com)
  * @since   2.0
+ * @version 2.1
  */
 // 检测PHP环境
 if(version_compare(PHP_VERSION,'5.3.0','<'))  die('require PHP > 5.3.0 !');

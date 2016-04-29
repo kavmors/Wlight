@@ -5,7 +5,7 @@ Wlight是一款面向开发的微信公众平台开发框架，包含对大部�
 **注意：由于架构调整，Wlight 2.0版本将不兼容1.0的所有版本**
 
 
-# **2.0 主要更新** #
+# **2.x 框架特性** #
 
 > - 引入命名空间，完善模块化，实现接口逻辑与开发逻辑的分离
 > - 根据接口功能，将各个API类库进行分类
@@ -13,6 +13,10 @@ Wlight是一款面向开发的微信公众平台开发框架，包含对大部�
 > - 重写数据统计功能
 > - 添加缓存机制
 
+# **2.1 重要更新** #
+
+> - 更改类库引入方式
+> - 简化配置导入流程
 
 # **运行环境要求** #
 
@@ -220,10 +224,11 @@ $this->map包含了消息体的各参数，详见下述[消息体结构参数](#
 在Response子类中，开发者可导入框架中针对微信公众平台API接口封装的类库。具体方法为调用import方法（此方法不能被覆盖）：
 
 	/**
-	* 引入一个类库文件,并返回该类的完整类名(包含命名空间)
+	* 引入一个类库文件,并返回该类实例对象
 	* @param $namespace - 类所在的空间
 	* @param $className - 类名
-	* @return 完整的命名空间+类名
+	* @return 实例对象
+	*/
 	protected final function import($namespace, $className)
 
 具体例子详见[API类库-引入API类](#引入api类)
@@ -342,10 +347,11 @@ API类库位于/wlight/library/api，辅助类位于/wlight/library/util。为�
 在Response继承类中，可调用$this->import($namespace, $className)：
 
 	/**
-	* 引入一个类库文件,并返回该类的完整类名(包含命名空间)
+	* 引入一个类库文件,并返回该类实例对象
 	* @param $namespace - 类所在的空间
 	* @param $className - 类名
-	* @return 完整的命名空间+类名
+	* @return 实例对象
+	*/
 	protected final function import($namespace, $className)
 
 可在覆盖invoke的方法体中调用import方法。以下例子展示了在invoke中返回有效access_token值：
@@ -356,7 +362,7 @@ API类库位于/wlight/library/api，辅助类位于/wlight/library/util。为�
 	  return $this->makeText($accessToken);
 	}
 
-在外部应用中（即不是自动回复开发，如/application中的web app网站，其入口不是index.php），由于无法继承Response类，不能调用$this->import方法，但可通过\wlight\dev\Library类，调用其import方法实现相同的效果。Library.import为静态方法。**外部应用必须通过Library::import的方式引入API类，而不能根据目录直接使用include，否则会导致路径出错。**
+在外部应用中（即不是自动回复开发，如/application中的web app网站，其入口不是index.php），由于无法继承Response类，不能调用$this->import方法，但可通过\wlight\dev\Library类，调用其import方法实现相同的效果。Library.import为静态方法。**外部应用必须通过Library::import的方式引入API类，不能根据目录直接使用include，否则会导致路径出错。**
 	
 	//假设在/application/index.php中, 需先引入Library.class.php
 	include(../wlight/develop/Library.class.php);
@@ -366,7 +372,7 @@ API类库位于/wlight/library/api，辅助类位于/wlight/library/util。为�
 
 Response.import和Library.import不在同一文件中，但两者参数定义与内部实现相同。其中，$namespace为类所在的命名空间，$className为类名。通过import方法，开发者不需考虑类文件的路径及命名空间，只需根据import的返回结果新建类即可。
 
-> import方法内部实现是通过$namespace和$class定位到类文件，然后调用include_once()导入该文件，并返回文件中命名空间形式的类名。如上述例子中，import导入了"/wlight/library/api/basic/AccessToken.class.php"，其返回值为"\wlight\basic\AccessToken"。因此"new $class()"相当于"new \wlight\basic\AccessToken"。
+> import方法内部实现通过$namespace和$class定位到类文件，然后调用include_once()导入该文件，并返回该类实例。
 
 ## **异常处理** ##
 

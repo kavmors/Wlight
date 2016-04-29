@@ -20,13 +20,13 @@ class Message {
    * @throws ApiException
    */
 	public function __construct() {
-    include_once (self::getDirRoot().'/wlight/library/api/basic/AccessToken.class.php');
-    include_once (self::getDirRoot().'/wlight/library/util/HttpClient.class.php');
-    include_once (self::getDirRoot().'/wlight/library/runtime/ApiException.class.php');
+    include_once (DIR_ROOT.'/wlight/library/api/basic/AccessToken.class.php');
+    include_once (DIR_ROOT.'/wlight/library/util/HttpClient.class.php');
+    include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
 
     $accessToken = new AccessToken();
     $this->accessToken = $accessToken->get();
-    $this->postfix = self::getWechatId();
+    $this->postfix = WECHAT_ID;
 	}
 
   /**
@@ -257,18 +257,6 @@ class Message {
     } else {
       return $account;
     }
-  }
-
-  //以下方法供外置应用调用本类时读取相关配置所用
-
-	//获取项目根目录
-  private static function getDirRoot() {
-    return defined('DIR_ROOT')? DIR_ROOT: \wlight\dev\Config::get('DIR_ROOT');
-  }
-
-  //获取平台微信号
-  private static function getWechatId() {
-    return defined('WECHAT_ID')? WECHAT_ID: \wlight\dev\Config::get('WECHAT_ID');
   }
 }
 ?>

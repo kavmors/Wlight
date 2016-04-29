@@ -13,8 +13,8 @@ class Jssdk {
   private $ticket;
 
   public function __construct() {
-    include_once (self::getDirRoot().'/wlight/library/api/web/JsapiTicket.class.php');
-    $this->appId = self::getAppId();
+    include_once (DIR_ROOT.'/wlight/library/api/web/JsapiTicket.class.php');
+    $this->appId = APP_ID;
     $ticket = new JsapiTicket();
     $this->ticket = $ticket->get();
   }
@@ -101,18 +101,6 @@ class Jssdk {
       $str .= substr($chars, mt_rand(0, strlen($chars) - 1), 1);
     }
     return $str;
-  }
-
-  //以下方法供外置应用调用本类时读取相关配置所用
-
-  //获取项目根目录
-  private static function getDirRoot() {
-    return defined('DIR_ROOT')? DIR_ROOT: \wlight\dev\Config::get('DIR_ROOT');
-  }
-
-  //获取项目AppId
-  private static function getAppId() {
-    return defined('APP_ID')? APP_ID: \wlight\dev\Config::get('APP_ID');
   }
 }
 ?>

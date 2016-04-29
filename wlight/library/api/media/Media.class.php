@@ -18,9 +18,9 @@ class Media {
    * @throws ApiException
    */
   public function __construct() {
-    include_once (self::getDirRoot().'/wlight/library/api/basic/AccessToken.class.php');
-    include_once (self::getDirRoot().'/wlight/library/util/HttpClient.class.php');
-    include_once (self::getDirRoot().'/wlight/library/runtime/ApiException.class.php');
+    include_once (DIR_ROOT.'/wlight/library/api/basic/AccessToken.class.php');
+    include_once (DIR_ROOT.'/wlight/library/util/HttpClient.class.php');
+    include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
 
     $accessToken = new AccessToken();
     $this->accessToken = $accessToken->get();
@@ -86,11 +86,11 @@ class Media {
     }
     //写入文件
     if (empty($toFile)) {
-      if (!is_dir(self::getResRoot().'/media')) {
-          mkdir(self::getResRoot().'/media');
-          chmod(self::getResRoot().'/media', 0777);
+      if (!is_dir(RES_ROOT.'/media')) {
+          mkdir(RES_ROOT.'/media');
+          chmod(RES_ROOT.'/media', 0777);
       }
-      $toFile = self::getResRoot()."/media/$mediaId".$this->parseExtension($header['Content-Type']);
+      $toFile = RES_ROOT."/media/$mediaId".$this->parseExtension($header['Content-Type']);
     }
     file_put_contents($toFile, $httpClient->getResponse());
     return filesize($toFile);
@@ -117,7 +117,7 @@ class Media {
       case 'mp4':   return 'video'; break;
       default:      return 'image'; break;
     }
-  } 
+  }
 
   //检查返回状态码
   private function checkErrcode($httpClient) {
@@ -136,17 +136,5 @@ class Media {
     }
     return $result;
   }
-
-  //以下方法供外置应用调用本类时读取相关配置所用
-  
-  //获取项目根目录
-  private static function getDirRoot() {
-    return defined('DIR_ROOT')? DIR_ROOT: \wlight\dev\Config::get('DIR_ROOT');
-  }
-
-  //获取默认resource目录
-  private static function getResRoot() {
-    return defined('RES_ROOT')? RES_ROOT: \wlight\dev\Config::get('RES_ROOT');
-  } 
 }
 ?>

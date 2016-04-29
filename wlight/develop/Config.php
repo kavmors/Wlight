@@ -1,24 +1,23 @@
 <?php
 /**
- * 获取基本配置参数(外部应用调用)
+ * 定义基本配置参数(外部应用调用)
  * @author  KavMors(kavmors@163.com)
- * @since   2.0
+ * @since   2.1
  */
 
 namespace wlight\dev;
 
+if (!defined('WLIGHT')) {
+  Config::defineAll();
+}
+
 class Config {
-  //获取名为$config的配置参数
-  public static function get($config) {
-    $file = dirname(__FILE__).'/../../runtime/cache/config.json.php';
-    if (file_exists($file)) {
-      $json = json_decode(self::getConfigStr($file), true);
-      if (!$json) {
-        return null;
-      }
-      return isset($json[$config])? $json[$config]: null;
+  //定义所有配置常量
+  public static function defineAll() {
+    $config = self::getAll();
+    foreach ($config as $key => $value) {
+      define($key, $value);
     }
-    return null;
   }
 
   //获取所有配置参数(Array返回)

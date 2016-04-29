@@ -9,6 +9,7 @@ namespace wlight\core;
 use wlight\runtime\Log;
 
 include (DIR_ROOT.'/wlight/library/runtime/Log.class.php');
+include (DIR_ROOT.'/wlight/library/core/support/Recorder.class.php');
 
 Log::getInstance()->start();
 
@@ -40,7 +41,7 @@ if (isset($_GET['echostr'])) {
   if (!empty(ENCODING_AESKEY)) {        //加密情况下
     include ($currentDir.'/../encrypt/Encryptor.class.php');
     $encryptor = new encrypt\Encryptor(TOKEN, ENCODING_AESKEY, APP_ID);
-    
+
     //解密
     $errorCode = $encryptor->decrypt($_GET['msg_signature'], $_GET['timestamp'], $_GET['nonce'], $postRaw, $postRaw);
     checkErrorCode($errorCode);
@@ -65,7 +66,7 @@ if (isset($_GET['echostr'])) {
   }
 
   //若配置文件不存在, 重新写入配置
-  if (!file_exists(RUNTIME_ROOT.'/cache/config.json.php')) {
+  if (!file_exists(RUNTIME_ROOT.'/cache/config.json')) {
     markConfig();
   }
 } elseif (DEBUG_MODE===true) {
@@ -91,14 +92,14 @@ Log::getInstance()->end();
 function checkSignature() {
   $signature = $_GET["signature"];
   $timestamp = $_GET["timestamp"];
-  $nonce = $_GET["nonce"];  
-        
+  $nonce = $_GET["nonce"];
+
   $token = TOKEN;
   $tmpArr = array($token, $timestamp, $nonce);
   sort($tmpArr, SORT_STRING);
   $tmpStr = implode($tmpArr);
   $tmpStr = sha1($tmpStr);
-  
+
   return $tmpStr == $signature;
 }
 
@@ -142,9 +143,8 @@ function markConfig() {
     'LOCK_ACCESS_TOKEN' => LOCK_ACCESS_TOKEN,
     'LOCK_JSAPI_TICKET' => LOCK_JSAPI_TICKET
   );
-  //写入配置时用php形式储存, 防止被查看
-  $configStr = '<?php exit; ?>'.json_encode($config);
-  file_put_contents(RUNTIME_ROOT.'/cache/config.json.php', $configStr);
-  chmod(RUNTIME_ROOT.'/cache/config.json.php', 0777);
+
+  $worker = new support\Recorder(RUNTIME_ROOT.'/cache/config.json');
+  $worker->write(json_encode($config));
 }
 ?>

@@ -32,14 +32,6 @@ class DbHelper {
   const USER = 'user';
   const PWD = 'pwd';
 
-  public function __construct() {
-    if (defined('DB_HOST')) {
-      $this->configJson = null;
-    } else {
-      $this->configJson = \wlight\dev\Config::getAll();
-    }
-  }
-
   /**
    * 选择数据库
    * @param string $dbName - 数据库名称
@@ -98,28 +90,17 @@ class DbHelper {
   }
 
   /**
-   * 重置所有配置, 全部使用配置文件中定义的值
+   * 重置所有配置为原始定义的值
    */
   public function loadDefault() {
-    if ($this->configJson==null) {
-      $this->charset    = DB_CHARSET;
-      $this->collation  = DB_COLLATION;
-      $this->type       = DB_TYPE;
-      $this->host       = DB_HOST;
-      $this->port       = DB_PORT;
-      $this->dbname     = DB_NAME;
-      $this->user       = DB_USER;
-      $this->pwd        = DB_PWD;
-    } else {
-      $this->charset    = $this->configJson['DB_CHARSET'];
-      $this->collation  = $this->configJson['DB_COLLATION'];
-      $this->type       = $this->configJson['DB_TYPE'];
-      $this->host       = $this->configJson['DB_HOST'];
-      $this->port       = $this->configJson['DB_PORT'];
-      $this->dbname     = $this->configJson['DB_NAME'];
-      $this->user       = $this->configJson['DB_USER'];
-      $this->pwd        = $this->configJson['DB_PWD'];
-    }
+    $this->charset    = DB_CHARSET;
+    $this->collation  = DB_COLLATION;
+    $this->type       = DB_TYPE;
+    $this->host       = DB_HOST;
+    $this->port       = DB_PORT;
+    $this->dbname     = DB_NAME;
+    $this->user       = DB_USER;
+    $this->pwd        = DB_PWD;
   }
 
   //返回连接错误信息
@@ -129,25 +110,14 @@ class DbHelper {
 
   //检查配置完整性
   private function checkConfig() {
-    if ($this->configJson==null) {
-      $this->charset !== null    or $this->charset   = DB_CHARSET;
-      $this->collation !== null  or $this->collation = DB_COLLATION;
-      $this->type !== null       or $this->type      = DB_TYPE;
-      $this->host !== null       or $this->host      = DB_HOST;
-      $this->port !== null       or $this->port      = DB_PORT;
-      $this->dbname !== null     or $this->dbname    = DB_NAME;
-      $this->user !== null       or $this->user      = DB_USER;
-      $this->pwd !== null        or $this->pwd       = DB_PWD;
-    } else {
-      $this->charset !== null    or $this->charset   = $this->configJson['DB_CHARSET'];
-      $this->collation !== null  or $this->collation = $this->configJson['DB_COLLATION'];
-      $this->type !== null       or $this->type      = $this->configJson['DB_TYPE'];
-      $this->host !== null       or $this->host      = $this->configJson['DB_HOST'];
-      $this->port !== null       or $this->port      = $this->configJson['DB_PORT'];
-      $this->dbname !== null     or $this->dbname    = $this->configJson['DB_NAME'];
-      $this->user !== null       or $this->user      = $this->configJson['DB_USER'];
-      $this->pwd !== null        or $this->pwd       = $this->configJson['DB_PWD'];
-    }
+    $this->charset !== null    or $this->charset   = DB_CHARSET;
+    $this->collation !== null  or $this->collation = DB_COLLATION;
+    $this->type !== null       or $this->type      = DB_TYPE;
+    $this->host !== null       or $this->host      = DB_HOST;
+    $this->port !== null       or $this->port      = DB_PORT;
+    $this->dbname !== null     or $this->dbname    = DB_NAME;
+    $this->user !== null       or $this->user      = DB_USER;
+    $this->pwd !== null        or $this->pwd       = DB_PWD;
   }
 }
 ?>

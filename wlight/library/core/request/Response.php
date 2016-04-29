@@ -60,15 +60,12 @@ class Response {
   public final function assign($postClass) {
     $this->map = $postClass;
   }
-  
+
   /**
-   * 引入一个类库文件,并返回该类的完整类名(包含命名空间)
+   * 引入一个类库文件,并返回该类实例对象
    * @param $namespace - 类所在的空间
    * @param $className - 类名
-   * @return 完整的命名空间+类名
-   * @example 引用AccessToken类时:
-   *          $class = $this->import('basic', 'AccessToken');
-   *          $accessToken = (new $class())->get()
+   * @return 实例对象
    */
   protected final function import($namespace, $className) {
     $wholeClass = "\\wlight\\$namespace\\$className";
@@ -163,7 +160,7 @@ class Response {
           <MediaId><![CDATA[%s]]></MediaId>
           <Title><![CDATA[%s]]></Title>
           <Description><![CDATA[%s]]></Description>
-          </Video> 
+          </Video>
           </xml>";
     $reply = sprintf($response, $this->map['FromUserName'], $this->map['ToUserName'], $createTime, $msgType, $mediaId, $title, $description);
     return $reply;
@@ -216,7 +213,7 @@ class Response {
       foreach ($articles as $item) {
         if (is_array($item)) {
           $temp = "<item>
-              <Title><![CDATA[%s]]></Title> 
+              <Title><![CDATA[%s]]></Title>
               <Description><![CDATA[%s]]></Description>
               <PicUrl><![CDATA[%s]]></PicUrl>
               <Url><![CDATA[%s]]></Url>

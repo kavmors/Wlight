@@ -13,8 +13,8 @@ class Oauth {
   private $webRoot;
 
 	public function __construct() {
-    $this->appId = self::getAppId();
-    $this->webRoot = self::getWebRoot();
+    $this->appId = APP_ID;
+    $this->webRoot = HOST.PATH;
   }
 
   /**
@@ -48,20 +48,6 @@ class Oauth {
     $extraString = urlencode($extraString);
     $location = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=$this->appId&redirect_uri=$redirect_uri&response_type=code&scope=$scope&state=$extraString#wechat_redirect";
     return $location;
-  }
-
-  //以下方法供外置应用调用本类时读取相关配置所用
-
-  //获取APPID配置
-  private static function getAppId() {
-    return defined('APP_ID')? APP_ID: \wlight\dev\Config::get('APP_ID');
-  }
-
-  //获取Wlight框架的网络路劲
-  private static function getWebRoot() {
-    $host = defined('HOST')? HOST: \wlight\dev\Config::get('HOST');
-    $path = defined('PATH')? PATH: \wlight\dev\Config::get('PATH');
-    return $host.$path;
   }
 }
 ?>

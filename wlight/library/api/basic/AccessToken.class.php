@@ -8,6 +8,8 @@
 namespace wlight\basic;
 use wlight\util\HttpClient;
 use wlight\runtime\ApiException;
+use wlight\core\support\Locker;
+use wlight\core\support\Recorder;
 
 class AccessToken {
   private $appid;
@@ -15,15 +17,19 @@ class AccessToken {
   private $runtimeRoot;
 	private $file;
 	private $url = 'https://api.weixin.qq.com/cgi-bin/token';
+  private $locker;
 
 	public function __construct() {
-    include_once (self::getDirRoot().'/wlight/library/util/HttpClient.class.php');
-    include_once (self::getDirRoot().'/wlight/library/runtime/ApiException.class.php');
+    include_once (DIR_ROOT.'/wlight/library/util/HttpClient.class.php');
+    include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
+    include_once (DIR_ROOT.'/wlight/library/core/support/Locker.class.php');
+    include_once (DIR_ROOT.'/wlight/library/core/support/Recorder.class.php');
 
-		$this->appid = self::getAppId();
-		$this->appsecret = self::getAppSecret();
-    $this->runtimeRoot = self::getRuntimeRoot();
+		$this->appid = APP_ID;
+		$this->appsecret = APP_SECRET;
+    $this->runtimeRoot = RUNTIME_ROOT;
     $this->file = $this->loadTokenRecord();
+    $this->locker = new Locker(LOCK_ACCESS_TOKEN);
 	}
 
 	/**
@@ -37,8 +43,9 @@ class AccessToken {
       return $this->reloadToken();
     }
 		if (file_exists($this->file)) {
-			$record = json_decode(self::getJsonStr($this->file), true);
-      
+      $reader = new Recorder($this->file);
+			$record = json_decode($reader->read(), true);
+
       if (!$record) {   //json结构检验
         return $this->reloadToken();
       } elseif ($record['expires_time'] <= time()) {    //token超时检验
@@ -53,13 +60,13 @@ class AccessToken {
 
   //刷新token值
 	private function reloadToken() {
-    $this->lock();
+    $locker->lock();
 
     $url = $this->url."?grant_type=client_credential&appid=$this->appid&secret=$this->appsecret";
     $httpClient = new HttpClient($url);
     $httpClient->get();
     if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      $this->unlock();
+      $locker->unlock();
       throw ApiException::httpException('status code: '.$httpClient->getStatus());
       return false;
     }
@@ -67,7 +74,7 @@ class AccessToken {
     //解析json结构
 		$stream = json_decode($httpClient->getResponse(), true);
     if (!$stream) {
-      $this->unlock();
+      $locker->unlock();
       throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
       return false;
     }
@@ -78,76 +85,29 @@ class AccessToken {
   		$expires_in = $stream['expires_in'];
   		$expires_time = intval(time())+intval($expires_in)-60;    //60s超时缓冲
   		$file_stream = json_encode(array('expires_time'=>$expires_time, 'access_token'=>$access_token));
-      $file_stream = '<?php exit; ?>'.$file_stream;
-  		file_put_contents($this->file, $file_stream);
-      chmod($this->file, 0777);
 
-      $this->unlock();
+      $writer = new Recorder($this->file);
+      $writer->write($file_stream);
+
+      $locker->unlock();
 
   		return $access_token;
     } else {
-      $this->unlock();
-      
+      $locker->unlock();
+
       if (isset($stream['errcode'])) {
         throw new ApiException($stream['errmsg'], $stream['errcode']);
       } else {
         throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
       }
     }
-    $this->unlock();
+    $locker->unlock();
     return false;
 	}
 
-  //解析出json格式的字符串
-  private function getJsonStr($file) {
-    $str = file_get_contents($file);
-    $start = stripos($str, '?>') + 2;
-    return substr($str, $start);
-  }
-
-  //文件锁
-  private $locker;
-
-  private function lock() {
-    $this->locker = fopen(self::getLockAccessToken(), 'r');
-    flock($this->locker, LOCK_EX);
-  }
-
-  private function unlock() {
-    flock($this->locker, LOCK_UN);
-    fclose($this->locker);
-  }
-
-  //以下方法供外置应用调用本类时读取相关配置所用
-  
   //获取当前appid下的Token记录文件
   private function loadTokenRecord() {
     return $this->runtimeRoot.'/cache/'.$this->appid.'_access_token.json.php';
-  }
-
-  //获取项目根目录
-  private static function getDirRoot() {
-    return defined('DIR_ROOT')? DIR_ROOT: \wlight\dev\Config::get('DIR_ROOT');
-  }
-
-  //获取APPID配置
-  private static function getAppId() {
-    return defined('APP_ID')? APP_ID: \wlight\dev\Config::get('APP_ID');
-  }
-
-  //获取APPSECRET配置
-  private static function getAppSecret() {
-    return defined('APP_SECRET')? APP_SECRET: \wlight\dev\Config::get('APP_SECRET');
-  }
-
-  //获取RUNTIME_ROOT配置
-  private static function getRuntimeRoot() {
-    return defined('RUNTIME_ROOT')? RUNTIME_ROOT: \wlight\dev\Config::get('RUNTIME_ROOT');
-  }
-
-  //获取LOCK_ACCESS_TOKEN配置
-  private static function getLockAccessToken() {
-    return defined('LOCK_ACCESS_TOKEN')? LOCK_ACCESS_TOKEN: \wlight\dev\Config::get('LOCK_ACCESS_TOKEN');
   }
 }
 ?>
