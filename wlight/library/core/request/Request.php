@@ -9,7 +9,7 @@ namespace wlight\core;
 use wlight\runtime\Log;
 
 include (DIR_ROOT.'/wlight/library/runtime/Log.class.php');
-include (DIR_ROOT.'/wlight/library/core/support/Recorder.class.php');
+include (DIR_ROOT.'/wlight/library/core/support/RecordManager.class.php');
 
 Log::getInstance()->start();
 
@@ -38,7 +38,7 @@ if (isset($_GET['echostr'])) {
   include ($currentDir.'/Controller.php');
 
   $postRaw = file_get_contents("php://input");
-  if (!empty(ENCODING_AESKEY)) {        //加密情况下
+  if (ENCODING_AESKEY != '') {        //加密情况下
     include ($currentDir.'/../encrypt/Encryptor.class.php');
     $encryptor = new encrypt\Encryptor(TOKEN, ENCODING_AESKEY, APP_ID);
 
@@ -144,7 +144,7 @@ function markConfig() {
     'LOCK_JSAPI_TICKET' => LOCK_JSAPI_TICKET
   );
 
-  $worker = new support\Recorder(RUNTIME_ROOT.'/cache/config.json');
+  $worker = new support\RecordManager(RUNTIME_ROOT.'/cache/config.json');
   $worker->write(json_encode($config));
 }
 ?>

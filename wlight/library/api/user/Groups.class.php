@@ -39,13 +39,12 @@ class Groups {
     $httpClient = new HttpClient($this->url.'/create?access_token='.$this->accessToken);
     $httpClient->setBody(json_encode($json));
     $httpClient->post();
-    $result = $this->checkErrcode($httpClient);
-    if ($result) {
-      if (isset($result['group']['id'])) {
-        return $result['group']['id'];
-      } else {
-        throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
-      }
+    $result = $httpClient->jsonToArray();
+
+    if (isset($result['group']['id'])) {
+      return $result['group']['id'];
+    } else {
+      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -58,13 +57,12 @@ class Groups {
   public function getAll() {
     $httpClient = new HttpClient($this->url.'/get?access_token='.$this->accessToken);
     $httpClient->get();
-    $result = $this->checkErrcode($httpClient);
-    if ($result) {
-      if (isset($result['groups'])) {
-        return $result['groups'];
-      } else {
-        throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
-      }
+    $result = $httpClient->jsonToArray();
+
+    if (isset($result['groups'])) {
+      return $result['groups'];
+    } else {
+      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -82,13 +80,12 @@ class Groups {
     $httpClient = new HttpClient($this->url.'/getid?access_token='.$this->accessToken);
     $httpClient->setBody(json_encode($json));
     $httpClient->post();
-    $result = $this->checkErrcode($httpClient);
-    if ($result) {
-      if (isset($result['groupid'])) {
-        return $result['groupid'];
-      } else {
-        throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
-      }
+    $result = $httpClient->jsonToArray();
+
+    if (isset($result['groupid'])) {
+      return $result['groupid'];
+    } else {
+      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -110,13 +107,12 @@ class Groups {
     $httpClient = new HttpClient($this->url.'/update?access_token='.$this->accessToken);
     $httpClient->setBody(json_encode($json));
     $httpClient->post();
-    $result = $this->checkErrcode($httpClient);
-    if ($result) {
-      if (isset($result['errcode'])) {  //errcode!=0已在checkErrcode检验
-        return true;
-      } else {
-        throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
-      }
+    $result = $httpClient->jsonToArray();
+
+    if (isset($result['errcode']) && $result['errcode']==0) {  //errcode!=0已在checkErrcode检验
+      return true;
+    } else {
+      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -139,13 +135,12 @@ class Groups {
     $httpClient = new HttpClient($this->url.'/members/batchupdate?access_token='.$this->accessToken);
     $httpClient->setBody(json_encode($json));
     $httpClient->post();
-    $result = $this->checkErrcode($httpClient);
-    if ($result) {
-      if (isset($result['errcode'])) {  //errcode!=0已在checkErrcode检验
-        return true;
-      } else {
-        throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
-      }
+    $result = $httpClient->jsonToArray();
+
+    if (isset($result['errcode']) && $result['errcode']==0) {  //errcode!=0已在checkErrcode检验
+      return true;
+    } else {
+      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -165,33 +160,14 @@ class Groups {
     $httpClient = new HttpClient($this->url.'/delete?access_token='.$this->accessToken);
     $httpClient->setBody(json_encode($json));
     $httpClient->post();
-    $result = $this->checkErrcode($httpClient);
-    if ($result) {
-      if (isset($result['errcode'])) {  //errcode!=0已在checkErrcode检验
-        return true;
-      } else {
-        throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
-      }
+    $result = $httpClient->jsonToArray();
+
+    if (isset($result['errcode']) && $result['errcode']==0) {  //errcode!=0已在checkErrcode检验
+      return true;
+    } else {
+      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
     return false;
-  }
-
-  //检查返回状态码
-  private function checkErrcode($httpClient) {
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      throw ApiException::httpException('status code: '.$httpClient->getStatus());
-      return false;
-    }
-    $result = json_decode($httpClient->getResponse(), true);
-    if (!$result) {
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
-    if (isset($result['errcode']) && $result['errcode']!=0) {
-      throw new ApiException($result['errmsg'], $result['errcode']);  //非0状态码
-      return false;
-    }
-    return $result;
   }
 }
 ?>

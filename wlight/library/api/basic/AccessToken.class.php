@@ -9,7 +9,7 @@ namespace wlight\basic;
 use wlight\util\HttpClient;
 use wlight\runtime\ApiException;
 use wlight\core\support\Locker;
-use wlight\core\support\Recorder;
+use wlight\core\support\RecordManager;
 
 class AccessToken {
   private $appid;
@@ -17,19 +17,17 @@ class AccessToken {
   private $runtimeRoot;
 	private $file;
 	private $url = 'https://api.weixin.qq.com/cgi-bin/token';
-  private $locker;
 
 	public function __construct() {
     include_once (DIR_ROOT.'/wlight/library/util/HttpClient.class.php');
     include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
     include_once (DIR_ROOT.'/wlight/library/core/support/Locker.class.php');
-    include_once (DIR_ROOT.'/wlight/library/core/support/Recorder.class.php');
+    include_once (DIR_ROOT.'/wlight/library/core/support/RecordManager.class.php');
 
 		$this->appid = APP_ID;
 		$this->appsecret = APP_SECRET;
     $this->runtimeRoot = RUNTIME_ROOT;
     $this->file = $this->loadTokenRecord();
-    $this->locker = new Locker(LOCK_ACCESS_TOKEN);
 	}
 
 	/**
@@ -43,7 +41,7 @@ class AccessToken {
       return $this->reloadToken();
     }
 		if (file_exists($this->file)) {
-      $reader = new Recorder($this->file);
+      $reader = new RecordManager($this->file);
 			$record = json_decode($reader->read(), true);
 
       if (!$record) {   //json结构检验
@@ -60,24 +58,12 @@ class AccessToken {
 
   //刷新token值
 	private function reloadToken() {
-    $locker->lock();
+    Locker::getInstance(LOCK_ACCESS_TOKEN)->lock();
 
     $url = $this->url."?grant_type=client_credential&appid=$this->appid&secret=$this->appsecret";
     $httpClient = new HttpClient($url);
     $httpClient->get();
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      $locker->unlock();
-      throw ApiException::httpException('status code: '.$httpClient->getStatus());
-      return false;
-    }
-
-    //解析json结构
-		$stream = json_decode($httpClient->getResponse(), true);
-    if (!$stream) {
-      $locker->unlock();
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
+    $stream = $httpClient->jsonToArray();
 
     if (isset($stream['access_token'])) {
       //提取参数
@@ -86,22 +72,18 @@ class AccessToken {
   		$expires_time = intval(time())+intval($expires_in)-60;    //60s超时缓冲
   		$file_stream = json_encode(array('expires_time'=>$expires_time, 'access_token'=>$access_token));
 
-      $writer = new Recorder($this->file);
+      $writer = new RecordManager($this->file);
       $writer->write($file_stream);
 
-      $locker->unlock();
+      Locker::getInstance(LOCK_ACCESS_TOKEN)->unlock();
 
   		return $access_token;
     } else {
-      $locker->unlock();
-
-      if (isset($stream['errcode'])) {
-        throw new ApiException($stream['errmsg'], $stream['errcode']);
-      } else {
-        throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
-      }
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
-    $locker->unlock();
+
+    //never
+    Locker::getInstance(LOCK_ACCESS_TOKEN)->unlock();
     return false;
 	}
 

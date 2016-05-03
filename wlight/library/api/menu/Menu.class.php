@@ -48,26 +48,15 @@ class Menu {
     $httpClient = new HttpClient($url);
     $httpClient->setBody(urldecode(json_encode($this->arrUrlencode($menu))));
     $httpClient->post();
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      throw ApiException::httpException('status code: '.$httpClient->getStatus());
-      return false;
-    }
-    $result = json_decode($httpClient->getResponse(), true);
-    if (!$result) {
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
+    $result = $httpClient->jsonToArray();
+
     if (isset($result['menuid'])) {
       return $result['menuid'];
-    } elseif (isset($result['errcode'])) {
-      if ($result['errcode']==0) {      //OK状态码
-        return true;
-      } else {
-        throw new ApiException($result['errmsg'], $result['errcode']);  //非0状态码
-      }
     } else {
       throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
+
+    //never
     return false;
   }
 
@@ -81,6 +70,7 @@ class Menu {
     $url = $this->url.'/get?access_token='.$this->accessToken;
     $httpClient = new HttpClient($url);
     $httpClient->get();
+
     if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
       throw ApiException::httpException('status code: '.$httpClient->getStatus());
       return false;
@@ -88,17 +78,9 @@ class Menu {
     if (!$assocArray) {     //直接返回API接口的结果
       return $httpClient->getResponse();
     }
-    $result = json_decode($httpClient->getResponse(), true);
-    if (!$result) {
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
-    if (isset($result['errcode'])) {
-      throw new ApiException($result['errmsg'], $result['errcode']);  //非0状态码
-    } else {
-      return $result;
-    }
-    return false;
+
+    $result = $httpClient->jsonToArray();
+    return $result;
   }
 
   /**
@@ -118,24 +100,13 @@ class Menu {
       $httpClient = new HttpClient($url);
       $httpClient->get();
     }
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      throw ApiException::httpException('status code: '.$httpClient->getStatus());
-      return false;
+    $result = $httpClient->jsonToArray();
+
+    if (isset($result['errcode'] && $result['errcode']==0)) {
+      return true;
     }
-    $result = json_decode($httpClient->getResponse(), true);
-    if (!$result) {
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
-    if (isset($result['errcode'])) {
-      if ($result['errcode']==0) {      //OK状态码
-        return true;
-      } else {
-        throw new ApiException($result['errmsg'], $result['errcode']);  //非0状态码
-      }
-    } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
-    }
+
+    //never
     return false;
   }
 
@@ -150,6 +121,7 @@ class Menu {
     $httpClient = new HttpClient($url);
     $httpClient->setBody(json_encode(array('user_id'=>$userId)));
     $httpClient->post();
+
     if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
       throw ApiException::httpException('status code: '.$httpClient->getStatus());
       return false;
@@ -157,17 +129,9 @@ class Menu {
     if (!$assocArray) {     //直接返回API接口的结果
       return $httpClient->getResponse();
     }
-    $result = json_decode($httpClient->getResponse(), true);
-    if (!$result) {
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
-    if (isset($result['errcode'])) {
-      throw new ApiException($result['errmsg'], $result['errcode']);  //非0状态码
-    } else {
-      return $result;
-    }
-    return false;
+
+    $result = $httpClient->jsonToArray();
+    return $result;
   }
 
   //递归将数组每个元素执行urlencode

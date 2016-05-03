@@ -10,7 +10,7 @@ use wlight\basic\AccessToken;
 use wlight\util\HttpClient;
 use wlight\runtime\ApiException;
 use wlight\core\support\Locker;
-use wlight\core\support\Recorder;
+use wlight\core\support\RecordManager;
 
 class JsapiTicket {
   private $appid;
@@ -18,7 +18,6 @@ class JsapiTicket {
   private $file;
   private $runtimeRoot;
   private $url = 'https://api.weixin.qq.com/cgi-bin/ticket/getticket';
-  private $locker;
 
   /**
    * @throws ApiException
@@ -28,14 +27,13 @@ class JsapiTicket {
     include_once (DIR_ROOT.'/wlight/library/util/HttpClient.class.php');
     include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
     include_once (DIR_ROOT.'/wlight/library/core/support/Locker.class.php');
-    include_once (DIR_ROOT.'/wlight/library/core/support/Recorder.class.php');
+    include_once (DIR_ROOT.'/wlight/library/core/support/RecordManager.class.php');
 
     $this->appid = APP_ID;
     $this->runtimeRoot = RUNTIME_ROOT;
     $this->file = $this->loadTicketRecord();
     $accessToken = new AccessToken();
     $this->accessToken = $accessToken->get();
-    $this->locker = new Locker(LOCK_JSAPI_TICKET);
   }
 
   /**
@@ -49,7 +47,7 @@ class JsapiTicket {
       return $this->reloadTicket();
     }
     if (file_exists($this->file)) {
-      $reader = new Recorder($this->file);
+      $reader = new RecordManager($this->file);
       $record = json_decode($reader->read(), true);
 
       if (!$record) {   //json结构检验
@@ -66,13 +64,13 @@ class JsapiTicket {
 
   //刷新ticket值
   private function reloadTicket() {
-    $locker->lock();
+    Locker::getInstance(LOCK_JSAPI_TICKET)->lock();
 
     $url = $this->url."/?access_token=$this->accessToken&type=jsapi";
     $httpClient = new HttpClient($url);
     $httpClient->get();
     if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      $locker->unlock();
+      Locker::getInstance(LOCK_JSAPI_TICKET)->unlock();
       throw ApiException::httpException('status code: '.$httpClient->getStatus());
       return false;
     }
@@ -80,7 +78,7 @@ class JsapiTicket {
     //解析json结构
     $stream = json_decode($httpClient->getResponse(), true);
     if (!$stream) {
-      $locker->unlock();
+      Locker::getInstance(LOCK_JSAPI_TICKET)->unlock();
       throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
       return false;
     }
@@ -92,14 +90,14 @@ class JsapiTicket {
       $expires_time = intval(time())+intval($expires_in)-60;    //60s超时缓冲
       $file_stream = json_encode(array('expires_time'=>$expires_time, 'jsapi_ticket'=>$jsapi_ticket));
 
-      $writer = new Recorder($this->file);
+      $writer = new RecordManager($this->file);
       $writer->write($file_stream);
 
-      $locker->unlock();
+      Locker::getInstance(LOCK_JSAPI_TICKET)->unlock();
 
       return $jsapi_ticket;
     } else {
-      $locker->unlock();
+      Locker::getInstance(LOCK_JSAPI_TICKET)->unlock();
 
       if (isset($stream['errcode'])) {
         throw new ApiException($stream['errmsg'], $stream['errcode']);
@@ -107,7 +105,7 @@ class JsapiTicket {
         throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
       }
     }
-    $locker->unlock();
+    Locker::getInstance(LOCK_JSAPI_TICKET)->unlock();
     return false;
   }
 

@@ -6,10 +6,10 @@
  */
 
 namespace wlight\runtime;
-use wlight\core\support\Recorder;
+use wlight\core\support\RecordManager;
 
 class Log {
-  const LOG_ROOT = RUNTIME_ROOT.'/log';
+  private $logRoot;
   private static $instance;
 
   public static function getInstance() {
@@ -27,6 +27,7 @@ class Log {
   private $endTime;
 
   public function __construct() {
+    $this->logRoot = RUNTIME_ROOT.'/log';
     $this->clearExpiredLog();
   }
 
@@ -70,8 +71,8 @@ class Log {
 
   //写Info类信息
   private function writeInfo() {
-    $file = self::LOG_ROOT.'/info/'.$this->escapeToDate().'.log.php';
-    $writer = new Recorder($file);
+    $file = $this->logRoot.'/info/'.$this->escapeToDate().'.log.php';
+    $writer = new RecordManager($file);
 
     if ($writer->isCreatedFile()) {
       $writer->append("\n");
@@ -92,8 +93,8 @@ class Log {
     if (empty($this->error)) {
       return;
     }
-    $file = self::LOG_ROOT.'/error/'.$this->escapeToDate().'.log.php';
-    $writer = new Recorder($file);
+    $file = $this->logRoot.'/error/'.$this->escapeToDate().'.log.php';
+    $writer = new RecordManager($file);
 
     if ($writer->isCreatedFile()) {
       $writer->append("\n");
@@ -137,8 +138,8 @@ class Log {
     $expireTime = '-'.strval($expireTime).' hour';
     $expireTime = strtotime($expireTime, time());
 
-    $infoDir = RUNTIME_ROOT.self::LOG_ROOT.'/info';
-    $errorDir = RUNTIME_ROOT.self::LOG_ROOT.'/error';
+    $infoDir = $this->logRoot.'/info';
+    $errorDir = $this->logRoot.'/error';
 
     //列出所有log文件(.log.php)
     if (is_dir($infoDir)) {

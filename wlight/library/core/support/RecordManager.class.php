@@ -7,7 +7,7 @@
 
 namespace wlight\core\support;
 
-class CacheWorker {
+class RecordManager {
 	private $cache;
 	private $isCreated;
 
@@ -21,7 +21,7 @@ class CacheWorker {
 			file_put_contents($file, "<?php exit; ?>\n");
 			$this->isCreated = true;
 		}
-		chmod($file, 0777);
+		chmod($file, 0775);
 	}
 
 	/**
@@ -55,7 +55,9 @@ class CacheWorker {
 	 */
 	public function read() {
 		$content = file_get_contents($this->cache);
-		$content = substr($fileContent, stripos($fileContent, '?>')+2);
+		$content = substr($content, stripos($content, '?>')+2);
 		return trim($content);
 	}
 }
+
+?>

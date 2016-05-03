@@ -44,14 +44,15 @@ class Media {
     $url = $this->url.'/upload?access_token='.$this->accessToken.'&type='.$type;
     $httpClient = new HttpClient($url);
     $httpClient->upload(array('media'=>$mediaFile));
-    $result = $this->checkErrcode($httpClient);
-    if ($result) {
-      if (isset($result['media_id'])) {
-        return $result['media_id'];
-      } else {
-        throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
-      }
+    $result = $httpClient->jsonToArray();
+
+    if (isset($result['media_id'])) {
+      return $result['media_id'];
+    } else {
+      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
+
+    //never
     return false;
   }
 
@@ -68,6 +69,7 @@ class Media {
     $url = $this->url.'/get?access_token='.$this->accessToken.'&media_id='.$mediaId;
     $httpClient = new HttpClient($url);
     $httpClient->get(30);
+
     if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
       throw ApiException::httpException('status code: '.$httpClient->getStatus());
       return false;
@@ -88,7 +90,7 @@ class Media {
     if (empty($toFile)) {
       if (!is_dir(RES_ROOT.'/media')) {
           mkdir(RES_ROOT.'/media');
-          chmod(RES_ROOT.'/media', 0777);
+          chmod(RES_ROOT.'/media', 0775);
       }
       $toFile = RES_ROOT."/media/$mediaId".$this->parseExtension($header['Content-Type']);
     }
@@ -117,24 +119,6 @@ class Media {
       case 'mp4':   return 'video'; break;
       default:      return 'image'; break;
     }
-  }
-
-  //检查返回状态码
-  private function checkErrcode($httpClient) {
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      throw ApiException::httpException('status code: '.$httpClient->getStatus());
-      return false;
-    }
-    $result = json_decode($httpClient->getResponse(), true);
-    if (!$result) {
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
-    if (isset($result['errcode']) && $result['errcode']!=0) {
-      throw new ApiException($result['errmsg'], $result['errcode']);  //非0状态码
-      return false;
-    }
-    return $result;
   }
 }
 ?>

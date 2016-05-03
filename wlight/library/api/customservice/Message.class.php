@@ -220,24 +220,15 @@ class Message {
     $httpClient = new HttpClient($url);
     $httpClient->setBody(urldecode(json_encode($jsonArr)));
     $httpClient->post();
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      throw ApiException::httpException('status code: '.$httpClient->getStatus());
-      return false;
-    }
-    $result = json_decode($httpClient->getResponse(), true);
-    if (!$result) {
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
+    $stream = $httpClient->jsonToArray();
+
     if (isset($result['errcode'])) {
-      if ($result['errcode']==0) {      //OK状态码
-        return true;
-      } else {
-        throw new ApiException($result['errmsg'], $result['errcode']);  //非0状态码
-      }
+      return true;
     } else {
       throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
+
+    //never
     return false;
   }
 

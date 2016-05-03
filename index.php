@@ -26,3 +26,4 @@ define('DB_PWD', '');           //数据库密码
 require './wlight/Wlight.php';
 
 //配置微信平台“服务器配置”后修改Application里的文件
+?>

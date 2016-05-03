@@ -6,6 +6,7 @@
  */
 
 namespace wlight\util;
+use wlight\runtime\ApiException;
 
 class HttpClient {
   const COMMON_USERAGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.107 Safari/537.36';
@@ -38,6 +39,11 @@ class HttpClient {
    */
   public static function escapeToGb2312($word) {
     return mb_convert_encoding($word, 'gb2312');
+  }
+
+  public function __construct($url = '') {
+    include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
+    $this->url = $url;
   }
 
   /**
@@ -101,8 +107,8 @@ class HttpClient {
     }
 
     //设置url
-    if (strtoupper($this->method)=='GET' && 
-        !empty($this->body) && 
+    if (strtoupper($this->method)=='GET' &&
+        !empty($this->body) &&
         is_string($this->body)) {
         curl_setopt($curl, CURLOPT_URL, $this->url.'?'.$this->body);
     } else {
@@ -124,6 +130,7 @@ class HttpClient {
     curl_close($curl);
     return $this->response;
   }
+
   /**
    * 执行get请求
    * @param integer $timeout - 可选,请求超时时间(默认5s)
@@ -166,7 +173,7 @@ class HttpClient {
         $files[$name] = '@'.$path;
       }
     }
-    
+
     if (is_array($extraParam) && count($extraParam)!=0) {
       $files = array_merge($extraParam, $files);
     }
@@ -183,6 +190,32 @@ class HttpClient {
   public function download($file, $timeout=30) {
     file_put_contents($file, exec($timeout));
     return filesize($file);
+  }
+
+  /**
+   * 将当前响应按JSON解析为数组
+   * @return array - 对象对组
+   * @throws ApiException
+   */
+  public function jsonToArray() {
+    if ($this->getStatus()!=200 || $this->getResponse()=='') {
+      throw ApiException::httpException('status code: '.$this->getStatus());
+      return false;
+    }
+
+    //解析json结构
+    $stream = json_decode($this->getResponse(), true);
+    if (!$stream) {
+      throw ApiException::jsonDecodeException('response: '.$this->getResponse());
+      return false;
+    }
+
+    //检查errcode
+    if (isset($stream['errcode']) && intval($stream['errcode'])!=0) {
+      throw new ApiException($stream['errmsg'], $stream['errcode']);
+      return false;
+    }
+    return $stream;
   }
 
   //以下是Getter

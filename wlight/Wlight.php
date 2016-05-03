@@ -3,11 +3,12 @@
  * 框架基础入口文件
  * @author  KavMors(kavmors@163.com)
  * @since   2.0
+ * @version 2.1
  */
 
 //版本信息
 define('WLIGHT', 'Wlight');
-define('WLIGHT_VERSION', '2.0');
+define('WLIGHT_VERSION', '2.1');
 
 //检查用户配置完整性
 defined('APP_ID') or die('APP_ID miss !');
@@ -79,7 +80,7 @@ wlight_makeFile(LOCK_JSAPI_TICKET);
 function wlight_makeDirectory($dir) {
   if (!is_dir($dir)) {
     mkdir($dir);
-    chmod($dir, 0777);
+    chmod($dir, 0775);
   }
 }
 

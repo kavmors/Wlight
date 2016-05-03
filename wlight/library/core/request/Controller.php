@@ -7,16 +7,16 @@
 
 namespace wlight\core;
 use wlight\runtime\Log;
-use wlight\core\support\Recorder;
+use wlight\core\support\RecordManager;
 use wlight\core\support\Locker;
 
 include (DIR_ROOT.'/wlight/library/core/request/Response.php');
+include (DIR_ROOT.'/wlight/library/core/support/Locker.class.php');
 
 class Controller {
   const EMPTY_RESPONSE = 'success';
   private $postClass;
   private $cacheQueue = array();
-  private $locker = new Locker(LOCK_CACHE);
 
   //Constructor解析xml参数
   public function __construct($postXml) {
@@ -43,7 +43,7 @@ class Controller {
       return self::EMPTY_RESPONSE;
     }
 
-    $locker->lock();
+    Locker::getInstance(LOCK_CACHE)->lock();
 
     $target = false;   //先定空返回值
     $phps = $this->getFromCache();
@@ -66,7 +66,7 @@ class Controller {
     //更新缓存
     $this->updateCacheFile();
 
-    $locker->unlock();
+    Locker::getInstance(LOCK_CACHE)->unlock();
 
     return $this->invokeTarget($target);
   }
@@ -162,11 +162,11 @@ class Controller {
       return false;
     }
 
-    $writer = new Recorder($file);
+    $writer = new RecordManager($file);
     if ($writer->isCreatedFile()) {
       return false;
     }
-    $this->cacheQueue = json_decode($writer->read();, true);
+    $this->cacheQueue = json_decode($writer->read(), true);
 
     //解析出错则重置缓存文件
     if (empty($this->cacheQueue)) {
@@ -204,7 +204,7 @@ class Controller {
       return;
     }
     //写入
-    $writer = new Recorder($file);
+    $writer = new RecordManager($file);
     $writer->write(json_encode($this->cacheQueue));
   }
 

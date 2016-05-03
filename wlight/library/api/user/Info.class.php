@@ -56,13 +56,12 @@ class Info {
     $httpClient = new HttpClient($url);
     $httpClient->setBody(json_encode($json));
     $httpClient->post();
-    $result = $this->checkErrcode($httpClient);
-    if ($result) {
-      if (isset($result['user_info_list'])) {
-        return $result['user_info_list'];
-      } else {
-        throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
-      }
+    $result = $httpClient->jsonToArray();
+
+    if (isset($result['user_info_list'])) {
+      return $result['user_info_list'];
+    } else {
+      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -90,17 +89,16 @@ class Info {
     $url = $this->url.'/get?access_token='.$this->accessToken.'&next_openid='.$fromOpenId;
     $httpClient = new HttpClient($url);
     $httpClient->get();
-    $result = $this->checkErrcode($httpClient);
-    if ($result) {
-      if (isset($result['total'])) {
-        $this->nextOpenId = $result['next_openid'];
-        if ($result['count']<self::LIST_MAX) {    //拉取完毕
-          $this->nextOpenId = '';
-        }
-        return $result;
-      } else {
-        throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+    $httpClient->jsonToArray();
+
+    if (isset($result['total'])) {
+      $this->nextOpenId = $result['next_openid'];
+      if ($result['count']<self::LIST_MAX) {    //拉取完毕
+        $this->nextOpenId = '';
       }
+      return $result;
+    } else {
+      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -121,32 +119,13 @@ class Info {
     $httpClient = new HttpClient($url);
     $httpClient->setBody(json_encode($json));
     $httpClient->post();
-    $result = $this->checkErrcode($httpClient);
-    if ($result) {
-      if (isset($result['errcode'])) {  //errcode!=0已在checkErrcode检验
-        return true;
-      } else {
-        throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
-      }
-    }
-  }
+    $result = $httpClient->jsonToArray();
 
-  //检查返回状态码
-  private function checkErrcode($httpClient) {
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      throw ApiException::httpException('status code: '.$httpClient->getStatus());
-      return false;
+    if (isset($result['errcode']) && $result['errcode']==0) {
+      return true;
+    } else {
+      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
-    $result = json_decode($httpClient->getResponse(), true);
-    if (!$result) {
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
-    if (isset($result['errcode']) && $result['errcode']!=0) {
-      throw new ApiException($result['errmsg'], $result['errcode']);  //非0状态码
-      return false;
-    }
-    return $result;
   }
 }
 ?>

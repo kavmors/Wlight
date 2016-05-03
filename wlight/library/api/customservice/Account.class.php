@@ -25,7 +25,7 @@ class Account {
 
     $accessToken = new AccessToken();
     $this->accessToken = $accessToken->get();
-    $this->postfix = WECHAT_ID);
+    $this->postfix = WECHAT_ID;
 	}
 
   /**
@@ -107,22 +107,15 @@ class Account {
     $url = 'https://api.weixin.qq.com/cgi-bin/customservice/getkflist?access_token='.$this->accessToken;
     $httpClient = new HttpClient($url);
     $httpClient->get();
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      throw ApiException::httpException('status code: '.$httpClient->getStatus());
-      return false;
-    }
-    $result = json_decode($httpClient->getResponse(), true);
-    if (!$result) {
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
+    $result = $httpClient->jsonToArray();
+
     if (isset($result['kf_list'])) {
       return $result['kf_list'];
-    } elseif (isset($result['errcode'])) {
-      throw new ApiException($result['errmsg'], $result['errcode']);  //非0状态码
     } else {
       throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
+
+    //never
     return false;
   }
 
@@ -135,45 +128,29 @@ class Account {
     $url = 'https://api.weixin.qq.com/cgi-bin/customservice/getonlinekflist?access_token='.$this->accessToken;
     $httpClient = new HttpClient($url);
     $httpClient->get();
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      throw ApiException::httpException('status code: '.$httpClient->getStatus());
-      return false;
-    }
-    $result = json_decode($httpClient->getResponse(), true);
-    if (!$result) {
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
+    $result = $httpClient->jsonToArray();
+
     if (isset($result['kf_online_list'])) {
       return $result['kf_online_list'];
-    } elseif (isset($result['errcode'])) {
-      throw new ApiException($result['errmsg'], $result['errcode']);  //非0状态码
     } else {
       throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
+
+    //never
     return false;
   }
 
   //检查返回的全局码
   private function checkErrcode($httpClient) {
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      throw ApiException::httpException('status code: '.$httpClient->getStatus());
-      return false;
-    }
-    $result = json_decode($httpClient->getResponse(), true);
-    if (!$result) {
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
+    $result = $httpClient->jsonToArray();
+
     if (isset($result['errcode'])) {
-      if ($result['errcode']==0) {      //OK状态码
-        return true;
-      } else {
-        throw new ApiException($result['errmsg'], $result['errcode']);  //非0状态码
-      }
+      return true;
     } else {
       throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
     }
+
+    //never
     return false;
   }
 

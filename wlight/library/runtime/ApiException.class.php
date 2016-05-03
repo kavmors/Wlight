@@ -6,18 +6,19 @@
  */
 
 namespace wlight\runtime;
+use wlight\core\support\Locker;
 
 class ApiException extends \Exception {
   //框架定义状态码
   const HTTP_ERROR_CODE = -101;
   const JSON_DECODE_ERROR_CODE = -102;
-  const ILLEGAL_JSON_ERROR_CODE = -103;
+  const ERROR_JSON_ERROR_CODE = -103;
   const FILE_NOT_EXISTS_ERROR_CODE = -104;
   const OAUTH_REJECT_ERROR_CODE = -105;
 
   const HTTP_ERROR_MSG = 'failed in http request';
   const JSON_DECODE_ERROR_MSG = 'not a string in json format';
-  const ILLEGAL_JSON_ERROR_MSG = 'illegal array decoded by json';
+  const ERROR_JSON_ERROR_MSG = 'illegal array decoded by json';
   const FILE_NOT_EXISTS_ERROR_MSG = 'file not exists in media uploading';
   const OAUTH_REJECT_ERROR_MSG = 'authentication reject by user';
 
@@ -26,6 +27,9 @@ class ApiException extends \Exception {
   public function __construct($message, $code, $extraInfo='') {
     parent::__construct($message, $code);
     $this->extraInfo = $extraInfo;
+
+    include_once (DIR_ROOT.'/wlight/library/core/support/Locker.class.php');
+    $this->unlockAll();
   }
 
   /**
@@ -69,6 +73,12 @@ class ApiException extends \Exception {
     return $msg;
   }
 
+  private function unlockAll() {
+    Locker::getInstance(LOCK_CACHE)->unlock();
+    Locker::getInstance(LOCK_ACCESS_TOKEN)->unlock();
+    Locker::getInstance(LOCK_JSAPI_TICKET)->unlock();
+  }
+
   public static function httpException($extraInfo='') {
     throw new ApiException(self::HTTP_ERROR_MSG, self::HTTP_ERROR_CODE, $extraInfo);
   }
@@ -77,11 +87,13 @@ class ApiException extends \Exception {
     return new ApiException(self::JSON_DECODE_ERROR_MSG, self::JSON_DECODE_ERROR_CODE, $extraInfo);
   }
 
-  public static function illegalJsonException($extraInfo='') {
-    return new ApiException(self::ILLEGAL_JSON_ERROR_MSG, self::ILLEGAL_JSON_ERROR_CODE, $extraInfo);
+  public static function errorJsonException($extraInfo='') {
+    return new ApiException(self::ERROR_JSON_ERROR_MSG, self::ERROR_JSON_ERROR_CODE, $extraInfo);
   }
 
   public static function fileNotExistsException($extraInfo='') {
     return new ApiException(self::FILE_NOT_EXISTS_ERROR_MSG, self::FILE_NOT_EXISTS_ERROR_CODE, $extraInfo);
   }
 }
+
+?>
