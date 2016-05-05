@@ -74,7 +74,9 @@ class ApiException extends \Exception {
     $msg .= '[ errMessage ]'. " ". $this->getMessage()."\n";
     $msg .= '[ file ]'. " ". $this->getFile()."\n";
     $msg .= '[ line ]'. " ". $this->getLine()."\n";
-    $msg .= '[ traceAsString ]'. " ". $this->getTraceAsString()."\n";
+    $msg .= '[ -----traceAsString----- ]'. "\n";
+    $msg .= $this->getTraceAsString()."\n";
+    $msg .= '[ -----/traceAsString----- ]'. "\n";
     $msg .= '[ extraInfo ]'. " ". $this->extraInfo."\n";
     $msg .= '[ -----/ApiException----- ]'."\n";
     return $msg;
