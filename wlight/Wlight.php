@@ -40,6 +40,9 @@ define('DIR_ROOT', substr(str_replace("\\", "/", dirname(__FILE__)), 0, strrpos(
 define('RUNTIME_ROOT', DIR_ROOT.'/runtime');
 define('MSG_ROOT', DIR_ROOT.'/message');
 
+//运行时信息配置常量
+defined('DEFAULT_TIMEZONE') or define('DEFAULT_TIMEZONE', 'PRC');
+
 //以下目录对应常量可供用户自定义
 defined('APP_ROOT') or define('APP_ROOT', DIR_ROOT.'/application');
 defined('RES_ROOT') or define('RES_ROOT', DIR_ROOT.'/resource');
@@ -90,6 +93,7 @@ function wlight_makeFile($file) {
   }
 }
 
+date_default_timezone_set(DEFAULT_TIMEZONE);
 //Request.php接收
 require(DIR_ROOT.'/wlight/library/core/request/Request.php');
 

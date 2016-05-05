@@ -69,19 +69,7 @@ class JsapiTicket {
     $url = $this->url."/?access_token=$this->accessToken&type=jsapi";
     $httpClient = new HttpClient($url);
     $httpClient->get();
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      Locker::getInstance(LOCK_JSAPI_TICKET)->unlock();
-      throw ApiException::httpException('status code: '.$httpClient->getStatus());
-      return false;
-    }
-
-    //解析json结构
-    $stream = json_decode($httpClient->getResponse(), true);
-    if (!$stream) {
-      Locker::getInstance(LOCK_JSAPI_TICKET)->unlock();
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
+    $stream = $httpClient->jsonToArray();
 
     if (isset($stream['ticket'])) {
       //提取参数
@@ -97,14 +85,10 @@ class JsapiTicket {
 
       return $jsapi_ticket;
     } else {
-      Locker::getInstance(LOCK_JSAPI_TICKET)->unlock();
-
-      if (isset($stream['errcode'])) {
-        throw new ApiException($stream['errmsg'], $stream['errcode']);
-      } else {
-        throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
-      }
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
+
+    //never
     Locker::getInstance(LOCK_JSAPI_TICKET)->unlock();
     return false;
   }

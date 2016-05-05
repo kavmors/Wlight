@@ -89,7 +89,7 @@ class Info {
     $url = $this->url.'/get?access_token='.$this->accessToken.'&next_openid='.$fromOpenId;
     $httpClient = new HttpClient($url);
     $httpClient->get();
-    $httpClient->jsonToArray();
+    $result = $httpClient->jsonToArray();
 
     if (isset($result['total'])) {
       $this->nextOpenId = $result['next_openid'];

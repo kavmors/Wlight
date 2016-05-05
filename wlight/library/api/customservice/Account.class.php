@@ -144,7 +144,7 @@ class Account {
   private function checkErrcode($httpClient) {
     $result = $httpClient->jsonToArray();
 
-    if (isset($result['errcode'])) {
+    if (isset($result['errcode']) && $result['errcode']==0) {
       return true;
     } else {
       throw ApiException::errorJsonException('response: '.$httpClient->getResponse());

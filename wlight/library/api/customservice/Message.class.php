@@ -220,9 +220,9 @@ class Message {
     $httpClient = new HttpClient($url);
     $httpClient->setBody(urldecode(json_encode($jsonArr)));
     $httpClient->post();
-    $stream = $httpClient->jsonToArray();
+    $result = $httpClient->jsonToArray();
 
-    if (isset($result['errcode'])) {
+    if (isset($result['errcode']) && $result['errcode']==0) {
       return true;
     } else {
       throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
