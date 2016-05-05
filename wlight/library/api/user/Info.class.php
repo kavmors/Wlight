@@ -61,7 +61,7 @@ class Info {
     if (isset($result['user_info_list'])) {
       return $result['user_info_list'];
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -98,7 +98,7 @@ class Info {
       }
       return $result;
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -124,7 +124,7 @@ class Info {
     if (isset($result['errcode']) && $result['errcode']==0) {
       return true;
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
   }
 }

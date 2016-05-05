@@ -53,7 +53,7 @@ class Menu {
     if (isset($result['menuid'])) {
       return $result['menuid'];
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
 
     //never

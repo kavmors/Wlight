@@ -225,7 +225,7 @@ class Message {
     if (isset($result['errcode'])) {
       return true;
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
 
     //never

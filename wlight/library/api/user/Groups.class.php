@@ -44,7 +44,7 @@ class Groups {
     if (isset($result['group']['id'])) {
       return $result['group']['id'];
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -62,7 +62,7 @@ class Groups {
     if (isset($result['groups'])) {
       return $result['groups'];
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -85,7 +85,7 @@ class Groups {
     if (isset($result['groupid'])) {
       return $result['groupid'];
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -112,7 +112,7 @@ class Groups {
     if (isset($result['errcode']) && $result['errcode']==0) {  //errcode!=0已在checkErrcode检验
       return true;
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -140,7 +140,7 @@ class Groups {
     if (isset($result['errcode']) && $result['errcode']==0) {  //errcode!=0已在checkErrcode检验
       return true;
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -165,7 +165,7 @@ class Groups {
     if (isset($result['errcode']) && $result['errcode']==0) {  //errcode!=0已在checkErrcode检验
       return true;
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }

@@ -67,7 +67,7 @@ class Response {
    * @param $className - 类名
    * @return 实例对象
    */
-  protected final function import($namespace, $className) {
+  public final function import($namespace, $className) {
     $wholeClass = "\\wlight\\$namespace\\$className";
     //除了util外,其余类库在/api内
     if ($namespace!='util') {
@@ -78,7 +78,7 @@ class Response {
     return $instance;
   }
 
-  protected final function emptyResponse() {
+  public final function emptyResponse() {
     return 'success';
   }
 
@@ -87,7 +87,7 @@ class Response {
    * @param string $text
    * @return string - response xml
    */
-  protected final function makeText($text) {
+  public final function makeText($text) {
     $msgType = 'text';
     $createTime = time();
     $response = "<xml>
@@ -106,7 +106,7 @@ class Response {
    * @param integer $mediaId
    * @return string - response xml
    */
-  protected final function makeImage($mediaId) {
+  public final function makeImage($mediaId) {
     $createTime = time();
     $msgType = 'image';
     $response = "<xml>
@@ -127,7 +127,7 @@ class Response {
    * @param integer $mediaId
    * @return string - response xml
    */
-  protected final function makeVoice($mediaId) {
+  public final function makeVoice($mediaId) {
     $createTime = time();
     $msgType = 'voice';
     $response = "<xml>
@@ -148,7 +148,7 @@ class Response {
    * @param string $mediaId
    * @return string - response xml
    */
-  protected final function makeVideo($mediaId, $title='', $description='') {
+  public final function makeVideo($mediaId, $title='', $description='') {
     $createTime = time();
     $msgType = 'video';
     $response = "<xml>
@@ -175,7 +175,7 @@ class Response {
    * @param integer $thumbMediaId
    * @return string - response xml
    */
-  protected final function makeMusic($title, $description, $musicUrl, $hqMusicUrl='', $thumbMediaId='') {
+  public final function makeMusic($title, $description, $musicUrl, $hqMusicUrl='', $thumbMediaId='') {
     $createTime = time();
     $msgType = 'music';
     $response = "<xml>
@@ -203,7 +203,7 @@ class Response {
    *      array('Title'=>'1', 'Description'=>'', 'PicUrl'=>'1.jpg', 'Url'=>''))
    * @return string - response xml
    */
-  protected final function makeNews($articles) {
+  public final function makeNews($articles) {
     if (isset($articles['Title'])) $articles = array($articles);
     $createTime = time();
     $msgType = 'news';
@@ -241,7 +241,7 @@ class Response {
    * @param string $account - 可选,指定转发到的客服帐号
    * @return string - response xml
    */
-  protected final function sendToService($account='') {
+  public final function sendToService($account='') {
     $createTime = time();
     $msgType = 'transfer_customer_service';
     $response = "<xml>

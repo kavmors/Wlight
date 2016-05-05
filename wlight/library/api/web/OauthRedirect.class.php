@@ -52,7 +52,7 @@ class OauthRedirect {
         $this->openid = $result['openid'];
         return $result;
       } else {
-        throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+        throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
       }
     }
     return false;

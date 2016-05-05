@@ -49,7 +49,7 @@ class Media {
     if (isset($result['media_id'])) {
       return $result['media_id'];
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
 
     //never

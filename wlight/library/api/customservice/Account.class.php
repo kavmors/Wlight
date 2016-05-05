@@ -112,7 +112,7 @@ class Account {
     if (isset($result['kf_list'])) {
       return $result['kf_list'];
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
 
     //never
@@ -133,7 +133,7 @@ class Account {
     if (isset($result['kf_online_list'])) {
       return $result['kf_online_list'];
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
 
     //never
@@ -147,7 +147,7 @@ class Account {
     if (isset($result['errcode'])) {
       return true;
     } else {
-      throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
 
     //never

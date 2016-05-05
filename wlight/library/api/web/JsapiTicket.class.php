@@ -102,7 +102,7 @@ class JsapiTicket {
       if (isset($stream['errcode'])) {
         throw new ApiException($stream['errmsg'], $stream['errcode']);
       } else {
-        throw ApiException::illegalJsonException('response: '.$httpClient->getResponse());
+        throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
       }
     }
     Locker::getInstance(LOCK_JSAPI_TICKET)->unlock();
