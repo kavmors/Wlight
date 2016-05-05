@@ -52,6 +52,8 @@ class Menu {
 
     if (isset($result['menuid'])) {
       return $result['menuid'];
+    } elseif (isset($result['errcode']) && $result['errcode'] == 0) {
+      return true;
     } else {
       throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
@@ -71,7 +73,7 @@ class Menu {
     $httpClient = new HttpClient($url);
     $httpClient->get();
 
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
+    if ($httpClient->getStatus()!=200 || $httpClient->getResponse()=='') {
       throw ApiException::httpException('status code: '.$httpClient->getStatus());
       return false;
     }
@@ -102,7 +104,7 @@ class Menu {
     }
     $result = $httpClient->jsonToArray();
 
-    if (isset($result['errcode'] && $result['errcode']==0)) {
+    if (isset($result['errcode']) && $result['errcode']==0) {
       return true;
     }
 
@@ -122,7 +124,7 @@ class Menu {
     $httpClient->setBody(json_encode(array('user_id'=>$userId)));
     $httpClient->post();
 
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
+    if ($httpClient->getStatus()!=200 || $httpClient->getResponse()=='') {
       throw ApiException::httpException('status code: '.$httpClient->getStatus());
       return false;
     }

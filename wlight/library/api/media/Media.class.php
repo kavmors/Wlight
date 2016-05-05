@@ -70,7 +70,7 @@ class Media {
     $httpClient = new HttpClient($url);
     $httpClient->get(30);
 
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
+    if ($httpClient->getStatus()!=200 || $httpClient->getResponse()=='') {
       throw ApiException::httpException('status code: '.$httpClient->getStatus());
       return false;
     }

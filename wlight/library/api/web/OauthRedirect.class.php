@@ -46,14 +46,12 @@ class OauthRedirect {
     $httpClient = new HttpClient($url);
     $httpClient->get();
     $result = $this->checkErrcode($httpClient);
-    if ($result) {
-      if (isset($result['openid'])) {
-        $this->accessToken = $result['access_token'];
-        $this->openid = $result['openid'];
-        return $result;
-      } else {
-        throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
-      }
+    if (isset($result['openid'])) {
+      $this->accessToken = $result['access_token'];
+      $this->openid = $result['openid'];
+      return $result;
+    } else {
+      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
     }
     return false;
   }
@@ -72,25 +70,11 @@ class OauthRedirect {
     $httpClient = new HttpClient($url);
     $httpClient->get();
     $result = $this->checkErrcode($httpClient);
-    if ($result) {
-      return $result;
-    }
+    return $result;
   }
 
   private function checkErrcode($httpClient) {
-    if ($httpClient->getStatus()!=200 || empty($httpClient->getResponse())) {
-      throw ApiException::httpException('status code: '.$httpClient->getStatus());
-      return false;
-    }
-    $result = json_decode($httpClient->getResponse(), true);
-    if (!$result) {
-      throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
-      return false;
-    }
-    if (isset($result['errcode']) && $result['errcode']!=0) {
-      throw new ApiException($result['errmsg'], $result['errcode']);  //非0状态码
-      return false;
-    }
+    $result = $httpClient->jsonToArray();
     return $result;
   }
 }
