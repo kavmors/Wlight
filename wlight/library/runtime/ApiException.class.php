@@ -34,6 +34,10 @@ class ApiException extends \Exception {
 
   /**
    * 记录Exception信息到日志
+   *
+   * 日志仅用于保存Wlight自动回复任务导致的ApiException信息,
+   * 请勿在外部应用调用此函数,以免log信息混淆.
+   * 建议外部应用开发独立Log系统,并调用ApiException.getInfo取得错误信息.
    */
   public function log() {
     if (!class_exists('\wlight\runtime\Log')) {
@@ -52,6 +56,9 @@ class ApiException extends \Exception {
 
   /**
    * 输出Exception信息
+   *
+   * 此函数用于调试,方便分析ApiException错误信息.
+   * 请勿在生产环境使用此函数.
    */
   public function printInfo() {
     echo $this->getInfo();
