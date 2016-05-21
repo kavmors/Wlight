@@ -82,8 +82,8 @@ wlight_makeFile(LOCK_JSAPI_TICKET);
 
 function wlight_makeDirectory($dir) {
   if (!is_dir($dir)) {
-    mkdir($dir);
-    chmod($dir, 0775);
+    @mkdir($dir);
+    @chmod($dir, 0775);
   }
 }
 
