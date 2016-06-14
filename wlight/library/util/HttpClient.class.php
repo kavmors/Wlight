@@ -73,7 +73,7 @@ class HttpClient {
    * 设置额外的curl选项参数
    * @param $options 选项数组,键值为CURLOPT_前缀的常量
    */
-  public function setCurlOptions($options) {
+  public function addCurlOptions($options) {
     $this->curlOptions = $options;
   }
 
@@ -90,8 +90,8 @@ class HttpClient {
     }
 
     //用户自定参数
-    if (is_array($curlOptions)) {
-      foreach ($curlOptions as $option => $value) {
+    if (is_array($this->curlOptions)) {
+      foreach ($this->curlOptions as $option => $value) {
         curl_setopt($curl, $option, $value);
       }
     }
