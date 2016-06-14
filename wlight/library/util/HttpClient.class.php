@@ -19,27 +19,7 @@ class HttpClient {
   private $response;
   private $status;
 
-  private $proxy;
-  private $autoRedirect;
-
-  //编码转换方法(static)
-  /**
-   * gb2312转换为utf8
-   * @param string $word - 要转换的字符串
-   * @return string - 转换后的字符串
-   */
-  public static function escapeToUtf8($word) {
-    return mb_convert_encoding($word, 'utf-8');
-  }
-
-  /**
-   * gb2312转换为utf8
-   * @param string $word - 要转换的字符串
-   * @return string - 转换后的字符串
-   */
-  public static function escapeToGb2312($word) {
-    return mb_convert_encoding($word, 'gb2312');
-  }
+  private $curlOptions;
 
   public function __construct($url = '') {
     include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
@@ -67,6 +47,7 @@ class HttpClient {
    * @param array $header - 数组形式的请求头部,以key-value键值对存在
    */
   public function setHeader($header) {
+    $header['Expect'] = '';
     $this->reqHeader = $this->handleHeaderArray($header);
   }
 
@@ -89,6 +70,14 @@ class HttpClient {
   }
 
   /**
+   * 设置额外的curl选项参数
+   * @param $options 选项数组,键值为CURLOPT_前缀的常量
+   */
+  public function setCurlOptions($options) {
+    $this->curlOptions = $options;
+  }
+
+  /**
    * 执行请求
    * @param integer $timeout - 可选,请求超时时间(默认5s)
    * @return string - 响应正文
@@ -99,11 +88,12 @@ class HttpClient {
     if (is_array($this->reqHeader)) {
       curl_setopt($curl, CURLOPT_HTTPHEADER, $this->reqHeader);
     }
-    if (!empty($this->proxy)) {
-      curl_setopt($curl, CURLOPT_PROXY, $this->proxy);
-    }
-    if ($this->autoRedirect==true) {
-      curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1);
+
+    //用户自定参数
+    if (is_array($curlOptions)) {
+      foreach ($curlOptions as $option => $value) {
+        curl_setopt($curl, $option, $value);
+      }
     }
 
     //设置url
