@@ -208,6 +208,22 @@ class HttpClient {
     return $stream;
   }
 
+  /**
+   * 清理对象缓存
+   */
+  public function clear() {
+    $this->url = '';
+    $this->method = 'GET';
+    $this->reqHeader = null;
+    $this->body = '';
+
+    $this->respHeader = null;
+    $this->response = '';
+    $this->status = 0;
+
+    $this->curlOptions = null;
+  }
+
   //以下是Getter
   public function getHeader() {
     return $this->respHeader;
