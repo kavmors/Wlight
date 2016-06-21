@@ -89,7 +89,7 @@ class AccessToken {
 
   //获取当前appid下的Token记录文件
   private function loadTokenRecord() {
-    return $this->runtimeRoot.'/cache/'.$this->appid.'_access_token.json.php';
+    return $this->runtimeRoot.'/cache/access_token.json.php';
   }
 }
 ?>

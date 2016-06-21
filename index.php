@@ -6,7 +6,7 @@
  * 应用入口文件
  * @author  KavMors(kavmors@163.com)
  * @since   2.0
- * @version 2.1
+ * @version 2.2
  */
 // 检测PHP环境
 if(version_compare(PHP_VERSION,'5.3.0','<'))  die('require PHP > 5.3.0 !');
@@ -24,6 +24,4 @@ define('DB_PWD', '');           //数据库密码
 
 //引入框架入口文件
 require './wlight/Wlight.php';
-
-//配置微信平台“服务器配置”后修改Application里的文件
 ?>

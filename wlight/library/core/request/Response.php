@@ -25,6 +25,8 @@ class Response {
   const TYPE_EVENT_CLICK = 'CLICK';
   const TYPE_EVENT_VIEW = 'VIEW';
 
+  const EMPTY_RESPONSE = 'success';
+
   protected $map;
 
   //验证是否执行invoke方法中的逻辑, 返回true表示执行
@@ -79,7 +81,7 @@ class Response {
   }
 
   public final function emptyResponse() {
-    return 'success';
+    return self::EMPTY_RESPONSE;
   }
 
   /**

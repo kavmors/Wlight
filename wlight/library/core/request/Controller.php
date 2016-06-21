@@ -14,7 +14,6 @@ include (DIR_ROOT.'/wlight/library/core/request/Response.php');
 include (DIR_ROOT.'/wlight/library/core/support/Locker.class.php');
 
 class Controller {
-  const EMPTY_RESPONSE = 'success';
   private $postClass;
   private $cacheQueue = array();
 
@@ -34,13 +33,25 @@ class Controller {
       } elseif ($this->postClass['MsgType']=='event' && $this->postClass['Event']=='CLICK') {
         Log::getInstance()->markContent($this->postClass['EventKey']);
       }
+
+      //Hook init
+      $hook = MSG_ROOT.'/Hook.php';
+      if (file_exists($hook)) {
+        include ($hook);
+        @$this->hook = new \wlight\msg\Hook();
+      }
     }
   }
 
   //逻辑处理主入口
   public function action() {
     if ($this->postClass==null) {
-      return self::EMPTY_RESPONSE;
+      return Response::EMPTY_RESPONSE;
+    }
+
+    //在所有自动回复前hook
+    if ($this->hook) {
+      @$this->hook->onPreExecute($this->postClass);
     }
 
     Locker::getInstance(LOCK_CACHE)->lock();
@@ -68,7 +79,14 @@ class Controller {
 
     Locker::getInstance(LOCK_CACHE)->unlock();
 
-    return $this->invokeTarget($target);
+    $result = $this->invokeTarget($target);
+
+    //在所有自动回复后hook
+    if ($this->hook) {
+      @$this->hook->onPostExecute($result);
+    }
+
+    return $result;
   }
 
   //遍历所有php文件(或缓存提取的),检验(verify)后执行(invoke)
@@ -121,12 +139,12 @@ class Controller {
   //执行目标类中的invoke方法
   private function invokeTarget($target) {
     if (!$target) {
-      return self::EMPTY_RESPONSE;
+      return Response::EMPTY_RESPONSE;
     }
     $reply = null;
     $reply = $target->invoke();
     $target = null;
-    return $reply? $reply: self::EMPTY_RESPONSE;
+    return $reply? $reply: Response::EMPTY_RESPONSE;
   }
 
   //存入缓存, 仅针对类型为text和event.CLICK的消息缓存

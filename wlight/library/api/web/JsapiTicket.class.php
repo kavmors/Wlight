@@ -95,7 +95,7 @@ class JsapiTicket {
 
   //获取当前appid下的Ticket记录文件
   private function loadTicketRecord() {
-    return $this->runtimeRoot.'/cache/'.$this->appid.'_jsapi_ticket.json.php';
+    return $this->runtimeRoot.'/cache/jsapi_ticket.json.php';
   }
 }
 ?>

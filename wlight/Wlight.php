@@ -3,12 +3,12 @@
  * 框架基础入口文件
  * @author  KavMors(kavmors@163.com)
  * @since   2.0
- * @version 2.1
+ * @version 2.2
  */
 
 //版本信息
 define('WLIGHT', 'Wlight');
-define('WLIGHT_VERSION', '2.1');
+define('WLIGHT_VERSION', '2.2');
 
 //检查用户配置完整性
 defined('APP_ID') or die('APP_ID miss !');
@@ -47,38 +47,48 @@ defined('DEFAULT_TIMEZONE') or define('DEFAULT_TIMEZONE', 'PRC');
 defined('APP_ROOT') or define('APP_ROOT', DIR_ROOT.'/application');
 defined('RES_ROOT') or define('RES_ROOT', DIR_ROOT.'/resource');
 
-//创建目录
-wlight_makeDirectory(RUNTIME_ROOT);
-wlight_makeDirectory(RUNTIME_ROOT.'/cache');
-wlight_makeDirectory(RUNTIME_ROOT.'/log');
-wlight_makeDirectory(RUNTIME_ROOT.'/log/info');
-wlight_makeDirectory(RUNTIME_ROOT.'/log/error');
-wlight_makeDirectory(RUNTIME_ROOT.'/lock');
-wlight_makeDirectory(MSG_ROOT);
-wlight_makeDirectory(MSG_ROOT.'/text');
-wlight_makeDirectory(MSG_ROOT.'/image');
-wlight_makeDirectory(MSG_ROOT.'/voice');
-wlight_makeDirectory(MSG_ROOT.'/video');
-wlight_makeDirectory(MSG_ROOT.'/shortvideo');
-wlight_makeDirectory(MSG_ROOT.'/link');
-wlight_makeDirectory(MSG_ROOT.'/location');
-wlight_makeDirectory(MSG_ROOT.'/event');
-wlight_makeDirectory(MSG_ROOT.'/event/subscribe');
-wlight_makeDirectory(MSG_ROOT.'/event/unsubscribe');
-wlight_makeDirectory(MSG_ROOT.'/event/CLICK');
-wlight_makeDirectory(MSG_ROOT.'/event/SCAN');
-wlight_makeDirectory(MSG_ROOT.'/event/LOCATION');
-wlight_makeDirectory(MSG_ROOT.'/event/VIEW');
-wlight_makeDirectory(APP_ROOT);
-wlight_makeDirectory(RES_ROOT);
-
 //文件锁
 define('LOCK_CACHE', RUNTIME_ROOT.'/lock/cache.lock');
 define('LOCK_ACCESS_TOKEN', RUNTIME_ROOT.'/lock/access_token.lock');
 define('LOCK_JSAPI_TICKET', RUNTIME_ROOT.'/lock/jsapi_ticket.lock');
-wlight_makeFile(LOCK_CACHE);
-wlight_makeFile(LOCK_ACCESS_TOKEN);
-wlight_makeFile(LOCK_JSAPI_TICKET);
+
+//其他选项
+date_default_timezone_set(DEFAULT_TIMEZONE);    //时区
+
+//初始化部署
+if (file_exists(DIR_ROOT.'/Sample.php') || file_exists(DIR_ROOT.'/Hook.php')) {
+//创建目录
+  wlight_makeDirectory(RUNTIME_ROOT);
+  wlight_makeDirectory(RUNTIME_ROOT.'/cache');
+  wlight_makeDirectory(RUNTIME_ROOT.'/log');
+  wlight_makeDirectory(RUNTIME_ROOT.'/log/info');
+  wlight_makeDirectory(RUNTIME_ROOT.'/log/error');
+  wlight_makeDirectory(RUNTIME_ROOT.'/lock');
+  wlight_makeDirectory(MSG_ROOT);
+  wlight_makeDirectory(MSG_ROOT.'/text');
+  wlight_makeDirectory(MSG_ROOT.'/image');
+  wlight_makeDirectory(MSG_ROOT.'/voice');
+  wlight_makeDirectory(MSG_ROOT.'/video');
+  wlight_makeDirectory(MSG_ROOT.'/shortvideo');
+  wlight_makeDirectory(MSG_ROOT.'/link');
+  wlight_makeDirectory(MSG_ROOT.'/location');
+  wlight_makeDirectory(MSG_ROOT.'/event');
+  wlight_makeDirectory(MSG_ROOT.'/event/subscribe');
+  wlight_makeDirectory(MSG_ROOT.'/event/unsubscribe');
+  wlight_makeDirectory(MSG_ROOT.'/event/CLICK');
+  wlight_makeDirectory(MSG_ROOT.'/event/SCAN');
+  wlight_makeDirectory(MSG_ROOT.'/event/LOCATION');
+  wlight_makeDirectory(MSG_ROOT.'/event/VIEW');
+  wlight_makeDirectory(APP_ROOT);
+  wlight_makeDirectory(RES_ROOT);
+  wlight_moveFile(DIR_ROOT.'/Hook.php', MSG_ROOT.'/Hook.php');
+  wlight_moveFile(DIR_ROOT.'/Sample.php', MSG_ROOT.'/text/Sample.php');
+  wlight_makeFile(LOCK_CACHE);
+  wlight_makeFile(LOCK_ACCESS_TOKEN);
+  wlight_makeFile(LOCK_JSAPI_TICKET);
+}
+
+//内部方式
 
 function wlight_makeDirectory($dir) {
   if (!is_dir($dir)) {
@@ -90,10 +100,15 @@ function wlight_makeDirectory($dir) {
 function wlight_makeFile($file) {
   if (!file_exists($file)) {
     file_put_contents($file, "");
+    @chmod($file, 0775);
   }
 }
 
-date_default_timezone_set(DEFAULT_TIMEZONE);
+function wlight_moveFile($from, $to) {
+  @rename($from, $to);
+  @chmod($to, 0775);
+}
+
 //Request.php接收
 require(DIR_ROOT.'/wlight/library/core/request/Request.php');
 
