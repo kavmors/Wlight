@@ -48,7 +48,7 @@ Wlight是一款面向开发的微信公众平台开发框架，包含对大部�
 - &emsp;&emsp;[引入API类库](#引入api类库)
 - &emsp;&emsp;[消息体结构参数](#消息体结构参数)
 - &emsp;&emsp;[文件名与类名规则](#文件名与类名规则)
-- &emsp;&emsp;[全局Hook机制](#全局Hook机制)
+- &emsp;&emsp;[全局Hook机制](#全局hook机制)
 - [框架机制](#框架机制)
 - &emsp;[接口逻辑与开发逻辑分离](#接口逻辑与开发逻辑分离)
 - &emsp;[缓存](#缓存)
@@ -159,7 +159,7 @@ Wlight是一款面向开发的微信公众平台开发框架，包含对大部�
 		public function invoke() {
 		  return $this->makeText('hello ' + $this->map['Content']);
 		}
-	
+
 		public function tag() {
 		  return '测试';
 		}
@@ -261,7 +261,7 @@ Hook机制用于监听全局自动回复事件，在自动回复执行前(后)�
 	* @param array &$map - 执行前的数据对象(来自微信服务器)
 	*/
 	public function onPreExecute(&$map)
-	
+
 	/**
 	* 在所有自动回复后执行
 	* @param string &$result - 执行后的xml字符串(向微信服务器回复的内容)
@@ -281,7 +281,7 @@ Wlight根据MsgType定位到/message/下的子目录，并遍历子目录下的�
 
 	//循环遍历中执行
 	...导入/message子目录文件操作
-	
+
 	//此处$classPath为根据文件名解析出的类名
 	$key = new $classPath;
 	//检测$key父类类型
@@ -294,11 +294,11 @@ Wlight根据MsgType定位到/message/下的子目录，并遍历子目录下的�
 	if ($key->verify()) {
 	  //执行用户定义逻辑, 返回结果
 	  $result = $key->invoke();
-  	
+
 	  ...统计及缓存
-	
+
 	  $key = null;
-	  return $result;	
+	  return $result;
 	}
 	return false;
 
@@ -386,7 +386,7 @@ API类库位于/wlight/library/api，辅助类位于/wlight/library/util。为�
 	}
 
 在外部应用中（即不是自动回复开发，如/application中的web app网站，其入口不是index.php），由于无法继承Response类，不能调用$this->import方法，但可通过\wlight\dev\Library类，调用其import方法实现相同的效果。Library.import为静态方法。**外部应用必须通过Library::import的方式引入API类，不能根据目录直接使用include，否则会导致路径出错。**
-	
+
 	//假设在/application/index.php中, 需先引入Library.class.php
 	include(../wlight/develop/Library.class.php);
 
@@ -423,7 +423,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	  namespace wlight\msg;
 	  use wlight\core\Response;
 	  use wlight\runtime\ApiException;	//必须加入此语句
-	
+
 	  ...继承Response, 重写verify
 
 	  public function invoke() {
@@ -487,7 +487,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function add($account, $nickname, $password)
-	
+
 	/**
 	* 修改客服帐号
 	* @param string $account - 客服帐号(可忽略后缀)
@@ -497,7 +497,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function update($account, $nickname, $password)
-	
+
 	/**
 	* 设置客服帐号头像
 	* @param string $account - 客服帐号(可忽略后缀)
@@ -506,7 +506,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function uploadHeadimg($account, $img)
-	
+
 	/**
 	* 删除客服帐号
 	* @param string $account - 客服帐号(可忽略后缀)
@@ -515,14 +515,14 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function delete($account, $nickname)
-	
+
 	/**
 	* 获取所有客服帐号
 	* @return array - 客服帐号数组(失败时返回false)
 	* @throws ApiException
 	*/
 	public function getAll()
-	
+
 	/**
 	* 获取在线客服接待信息
 	* @return array - 客服接待信息集合(失败时返回false)
@@ -539,7 +539,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @param string $account - 客服帐号
 	*/
 	public function setAccount($account)
-	
+
 	/**
 	* 发送文本消息
 	* @param string $user - 接收方
@@ -548,7 +548,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function sendText($user, $text)
-	
+
 	/**
 	* 发送图片消息
 	* @param string $user - 接收方
@@ -557,7 +557,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function sendImage($user, $mediaId)
-	
+
 	/**
 	* 发送语音消息
 	* @param string $user - 接收方
@@ -566,7 +566,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function sendVoice($user, $mediaId)
-	
+
 	/**
 	* 发送视频消息
 	* @param string $user - 接收方
@@ -578,7 +578,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function sendVideo($mediaId, $thumbMediaId, $title='', $description='')
-	
+
 	/**
 	* 发送音乐消息
 	* @param string $user - 接收方
@@ -591,7 +591,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function sendMusic($title, $description, $musicUrl, $hqMusicUrl, $thumbMediaId)
-	
+
 	/**
 	* 发送图文消息(跳转到链接)
 	* @param string $user - 接收方
@@ -602,7 +602,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function sendNews($user, $articles)
-	
+
 	/**
 	* 发送图文消息(跳转到图文页面)
 	* @param string $user - 接收方
@@ -611,7 +611,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function sendMpnews($user, $mediaId)
-	
+
 	/**
 	* 发送卡券
 	* @param string $user - 接收方
@@ -638,7 +638,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function upload($mediaFile, $type=null)
-	
+
 	/**
 	* 下载一个素材
 	* @param string $mediaId - 媒体id,通过上传获得
@@ -664,7 +664,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function create($menu, $condition=null)
-	
+
 	/**
 	* 查询自定义菜单(结果包含默认和个性化菜单)
 	* @param boolean $assocArray - 可选,false则直接返回API的结果(默认true返回解析后的数组)
@@ -672,7 +672,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function get($assocArray = true)
-	
+
 	/**
 	* 删除自定义菜单(默认或个性化)
 	* @param string $menuId - 可选,个性化菜单的menuid,不填则删除所有菜单(包括默认和个性化)
@@ -680,7 +680,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function delete($menuId=null)
-	
+
 	/**
 	* 测试个性化菜单
 	* @param string $userId - 用户openId或微信号
@@ -698,7 +698,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @return array - 菜单数组
 	*/
 	public function getMenu()
-	
+
 	/**
 	* 添加一个子菜单
 	* @param string $name - 子菜单标题
@@ -706,7 +706,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @return array - 菜单生成数组
 	*/
 	public function addSubButton($name, $subButton)
-	
+
 	/**
 	* 添加一个CLICK类型菜单
 	* @param string $name - 菜单标题
@@ -714,7 +714,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @return array - 菜单生成数组
 	*/
 	public function addClick($name, $key)
-	
+
 	/**
 	* 添加一个VIEW类型菜单
 	* @param string $url - 网页链接
@@ -722,7 +722,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @return array - 菜单生成数组
 	*/
 	public function addView($name, $url)
-	
+
 	/**
 	* 添加一个扫码类型菜单
 	* @param string $name - 菜单标题
@@ -731,7 +731,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @return array - 菜单生成数组
 	*/
 	public function addScan($name, $key, $type='scancode_push')
-	
+
 	/**
 	* 添加一个发图类型菜单
 	* @param string $name - 菜单标题
@@ -740,7 +740,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @return array - 菜单生成数组
 	*/
 	public function addPic($name, $key, $type='pic_photo_or_album')
-	
+
 	/**
 	* 添加一个发送位置类型菜单
 	* @param string $name - 菜单标题
@@ -764,14 +764,14 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function create($name)
-	
+
 	/**
 	* 查询所有分组
 	* @return array - 分组数组(失败时返回false)
 	* @throws ApiException
 	*/
 	public function getAll()
-	
+
 	/**
 	* 查询用户所在的分组
 	* @param string $openId - 用户openid
@@ -779,7 +779,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function queryUser($openId)
-	
+
 	/**
 	* 修改分组名
 	* @param string $groupId - 分组id
@@ -788,7 +788,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function update($groupId, $name)
-	
+
 	/**
 	* 移动用户分组
 	* @param string/array $openidList - 用户openid的列表(不超过50)
@@ -797,7 +797,7 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function moveUpser($openidList, $toGroupId)
-	
+
 	/**
 	* 删除分组
 	* @param string $groupId - 分组id
@@ -818,14 +818,14 @@ ApiException针对错误信息提供操作方法，在捕获异常后可调用�
 	* @throws ApiException
 	*/
 	public function get($openId, $language='zh_CN')
-	
+
 	/**
 	* 从头拉取用户的openid列表(最多拉取10000个)
 	* @return array - 接口返回结果集合,包含总关注数、本次拉取数及openid列表
 	* @throws ApiException
 	*/
 	public function getUserListFromStart()
-	
+
 	/**
 	* 获取用户的openid列表(每次最多拉取10000个)
 	* @param string $fromOpenId - 起始openid,不填写代表接上次结果继续拉取
@@ -868,28 +868,28 @@ Web开发相关接口。
 	* @param boolean $debug - true为开启调试模式
 	*/
 	public function setDebug($debug)
-	
+
 	/**
 	* 获取jsapi接口的配置信息
 	* @param string/array $apiList - 需要使用的JS接口列表
 	* @return string - 验证配置对应的js语句,可直接在js脚本中使用
 	*/
 	public function config($apiList)
-	
+
 	/**
 	* 获取引入js文件的路径
 	* @param string $version - 可选,引入文件的版本号,默认1.0.0
 	* @return string - js文件路径
 	*/
 	public function getReference($version = '1.0.0')
-	
+
 	/**
 	* 获取引入js文件的标签
 	* @param string $version - 可选,引入文件的版本号,默认1.0.0
 	* @return string - js文件标签
 	*/
 	public function getReferenceLabel($version = '1.0.0')
-	
+
 	/**
 	* 获取权限签名
 	* @return array - 权限签名数组,包含appId、signature等字段
@@ -899,7 +899,7 @@ Web开发相关接口。
 ### **Oauth** ###
 
 [网页授权获取用户信息的接口](http://mp.weixin.qq.com/wiki/4/9ac2e7b1f1d22e9e57260f6553822520.html)
-	
+
 	/**
 	* 设置回调后重定向url
 	* @param string $redirectUrl - 重定向url
@@ -912,7 +912,7 @@ Web开发相关接口。
 	* @return string - 重定向路径
 	*/
 	public function getBasic($extraString = '')
-	
+
 	/**
 	* 获取scope为snsapi_userinfo的重定向路径(获取用户具体信息)
 	* @param string $extraString - 可选,开发者额外参数
@@ -929,7 +929,7 @@ Web开发相关接口。
 	* @return array - 基本信息数组
 	*/
 	public function getBasic()
-	
+
 	/**
 	* 获取用户详细信息
 	* @param string $language - 可选,用户语言版本

@@ -16,7 +16,7 @@ class Config {
   public static function defineAll() {
     $config = self::getAll();
     foreach ($config as $key => $value) {
-      define($key, $value);
+      defined($key) or define($key, $value);
     }
   }
 

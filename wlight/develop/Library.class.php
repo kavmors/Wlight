@@ -7,7 +7,7 @@
 
 namespace wlight\dev;
 
-require (dirname(__FILE__).'/Config.php');
+include_once (dirname(__FILE__).'/Config.php');
 
 class Library {
   /**
