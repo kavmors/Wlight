@@ -15,7 +15,7 @@ class Sample extends Response {
 
   public function invoke() {
     //回复内容
-    return $this->makeText('some text to reply...');
+    return $this->makeText('you sent: '. $this->map['Content']);
   }
 
   public function cache() {

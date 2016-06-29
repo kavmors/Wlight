@@ -108,12 +108,14 @@ class Controller {
       if ($classPath==false) {
         continue;
       }
+
       //类已存在则跳过
       if (class_exists($classPath)) {
-        continue;
+        include_once($phpName);
+      } else {
+        include($phpName);
       }
-      //否则导入
-      include($phpName);
+
       //仍不存在该类则跳过
       if (!class_exists($classPath)) {
         continue;
