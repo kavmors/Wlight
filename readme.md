@@ -26,7 +26,7 @@ Wlight是一款面向开发的微信公众平台开发框架，包含对大部�
 
 完成公众平台部署后，在/message/text下新建自动回复规则。以下是框架的Sample.php示例文件。
 
-		<?php
+	<?php
 		/**
 		 * Sample file
 		 */
@@ -54,23 +54,22 @@ Wlight是一款面向开发的微信公众平台开发框架，包含对大部�
 		    return '示例';  //数据统计标签
 		  }
 		}
-
-		?>
+	?>
 
 详细文档请参考(Wiki)[#./wiki]
 
 # **License** #
 
-		Copyright 2016 KavMors
+	Copyright 2016 KavMors
 
-		Licensed under the Apache License, Version 2.0 (the "License");
-		you may not use this file except in compliance with the License.
-		You may obtain a copy of the License at
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
 
-				http://www.apache.org/licenses/LICENSE-2.0
+		http://www.apache.org/licenses/LICENSE-2.0
 
-		Unless required by applicable law or agreed to in writing, software
-		distributed under the License is distributed on an "AS IS" BASIS,
-		WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-		See the License for the specific language governing permissions and
-		limitations under the License.
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
