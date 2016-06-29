@@ -58,7 +58,13 @@ Wlight是一款面向开发的微信公众平台开发框架，包含对大部�
 
 	?>
 
-详细文档请参考[Wiki](https://github.com/kavmors/Wlight/wiki)
+详细文档请参考[Wiki](https://github.com/kavmors/Wlight/wiki)。
+
+
+# **Author** #
+
+KavMors (kavmors@163.com)
+
 
 # **License** #
 
