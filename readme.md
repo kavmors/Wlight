@@ -27,36 +27,38 @@ Wlight是一款面向开发的微信公众平台开发框架，包含对大部�
 完成公众平台部署后，在/message/text下新建自动回复规则。以下是框架的Sample.php示例文件。
 
 	<?php
-		/**
-		 * Sample file
-		 */
-		namespace wlight\msg;
-		use wlight\core\Response;
 
-		//类名与文件名的主体部分相同
-		//详细规则参考wiki
-		class Sample extends Response {
-		  public function verify() {
-		    //返回true时执行invoke方法
-		    return $this->map['Content'] == 'hello';
-		  }
+	/**
+	 * Sample file
+	 */
+	namespace wlight\msg;
+	use wlight\core\Response;
 
-		  public function invoke() {
-		    //回复内容
-		    return $this->makeText('you sent: '. $this->map['Content']);
-		  }
+	//类名与文件名的主体部分相同
+	//详细规则参考wiki
+	class Sample extends Response {
+	  public function verify() {
+	    //返回true时执行invoke方法
+	    return $this->map['Content'] == 'hello';
+	  }
 
-		  public function cache() {
-		    return true;    //缓存控制
-		  }
+	  public function invoke() {
+	    //回复内容
+	    return $this->makeText('you sent: '. $this->map['Content']);
+	  }
 
-		  public function tag() {
-		    return '示例';  //数据统计标签
-		  }
-		}
+	  public function cache() {
+	    return true;    //缓存控制
+	  }
+
+	  public function tag() {
+	    return '示例';  //数据统计标签
+	  }
+	}
+
 	?>
 
-详细文档请参考(Wiki)[#./wiki]
+详细文档请参考[Wiki](./wiki)
 
 # **License** #
 
