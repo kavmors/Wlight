@@ -30,7 +30,7 @@ if (isset($_GET['echostr'])) {
         require($currentDir.'/Mysql.php');
         break;
     }
-    markConfig();
+    resetCache();
     echo $echoStr;
   }
 } elseif ($_SERVER['REQUEST_METHOD']=='POST') {
@@ -67,7 +67,7 @@ if (isset($_GET['echostr'])) {
 
   //若配置文件不存在, 重新写入配置
   if (!file_exists(RUNTIME_ROOT.'/cache/config.json')) {
-    markConfig();
+    resetCache();
   }
 } elseif (DEBUG_MODE===true) {
   Log::getInstance()->i('action', 'debug');
@@ -83,7 +83,7 @@ if (isset($_GET['echostr'])) {
       require($currentDir.'/Mysql.php');
       break;
   }
-  markConfig();
+  resetCache();
 }
 
 //全脚本结束,日志写入文件
@@ -109,9 +109,15 @@ function checkErrorCode($errorCode) {
   }
 }
 
-//记录配置项
-function markConfig() {
+//重置缓存: 记录配置项, 清理缓存, 清理Token
+function resetCache() {
   Log::getInstance()->i('mark-config');
+
+  @unlink(RUNTIME_ROOT.'/cache/access_token.json.php');
+  @unlink(RUNTIME_ROOT.'/cache/jsapi_ticket.json.php');
+  @unlink(RUNTIME_ROOT.'/cache/config.json.php');
+  @unlink(RUNTIME_ROOT.'/cache/msg_text.json.php');
+  @unlink(RUNTIME_ROOT.'/cache/msg_click.json.php');
 
   $config = array(
     'HOST' => HOST,

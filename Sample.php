@@ -6,7 +6,7 @@ namespace wlight\msg;
 use wlight\core\Response;
 
 //类名与文件名的主体部分相同
-//详细规则参考readme
+//详细规则参考wiki
 class Sample extends Response {
   public function verify() {
     //返回true时执行invoke方法
@@ -23,7 +23,7 @@ class Sample extends Response {
   }
 
   public function tag() {
-    return 'Just a sample';
+    return '示例';  //数据统计标签
   }
 }
 
