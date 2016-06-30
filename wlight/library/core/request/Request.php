@@ -10,6 +10,8 @@ use wlight\runtime\Log;
 
 include (DIR_ROOT.'/wlight/library/runtime/Log.class.php');
 include (DIR_ROOT.'/wlight/library/core/support/RecordManager.class.php');
+include (DIR_ROOT.'/wlight/library/util/MemcacheHelper.class.php');
+include (DIR_ROOT.'/wlight/library/util/DbHelper.class.php');
 
 Log::getInstance()->start();
 
@@ -21,13 +23,13 @@ if (isset($_GET['echostr'])) {
   if (checkSignature()) {
     switch (DB_TYPE) {
       case 'mysql':
-        require($currentDir.'/Mysql.php');
+        require($currentDir.'/../support/Mysql.php');
         break;
       /** 其他类型数据库暂不支持
       case 'others'
       **/
       default:
-        require($currentDir.'/Mysql.php');
+        require($currentDir.'/../support/Mysql.php');
         break;
     }
     resetCache();
@@ -74,13 +76,13 @@ if (isset($_GET['echostr'])) {
 
   switch (DB_TYPE) {
     case 'mysql':
-      require($currentDir.'/Mysql.php');
+      require($currentDir.'/../support/Mysql.php');
       break;
     /** 其他类型数据库暂不支持
     case 'others'
     **/
     default:
-      require($currentDir.'/Mysql.php');
+      require($currentDir.'/../support/Mysql.php');
       break;
   }
   resetCache();
@@ -131,6 +133,9 @@ function resetCache() {
     'DB_PREFIX' => DB_PREFIX,
     'DB_CHARSET' => DB_CHARSET,
     'DB_COLLATION' => DB_COLLATION,
+    'MEMCACHE_HOST' => MEMCACHE_HOST,
+    'MEMCACHE_PORT' => MEMCACHE_PORT,
+    'MEMCACHE_ENABLE' => MEMCACHE_ENABLE,
     'RECORD_LIVE' => RECORD_LIVE,
     'LOG_LIVE' => LOG_LIVE,
     'MAX_CACHE' => MAX_CACHE,

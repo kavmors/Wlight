@@ -5,16 +5,15 @@
  * @since   2.0
  */
 
-namespace wlight\core;
+namespace wlight\core\support;
 use \wlight\util\DbHelper;
-
-include_once (DIR_ROOT.'/wlight/library/util/DbHelper.class.php');
 
 $user = DB_USER;
 $host = DB_HOST;
 $dbname = DB_NAME;
 $collation = DB_COLLATION;
 $table = DB_PREFIX.'_tag';
+$tableCache = DB_PREFIX.'_cache';
 
 // Connect
 $helper = new DbHelper();
@@ -46,14 +45,22 @@ try {
   $link->exec("CREATE TABLE IF NOT EXISTS `$table` (
     `date` date COLLATE $collation NOT NULL,
     PRIMARY KEY(`date`)
-  )");
+  ) COMMENT='功能统计'");
 
   $tableMap = $table.'_map';
   $link->exec("CREATE TABLE IF NOT EXISTS `$tableMap` (
     `key` char(20) COLLATE $collation NOT NULL,
     `map` varchar(30) COLLATE $collation NOT NULL,
     PRIMARY KEY(`key`)
-  )");
+  ) COMMENT='功能描述'");
+
+  $link->exec("CREATE TABLE IF NOT EXISTS `$tableCache` (
+    `key` char(40) COLLATE $collation NOT NULL,
+    `reply` text COLLATE $collation,
+    `time` int NOT NULL DEFAULT 0,
+    PRIMARY KEY(`key`)
+  ) COMMENT='超时记录缓存'");
+
   $link = null;
 } catch (\PDOException $e) {
   $link = null;

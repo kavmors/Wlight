@@ -20,7 +20,7 @@ defined('DB_USER') or die('DB_USER miss !');
 defined('DB_PWD') or die('DB_PWD miss !');
 
 //常量默认值定义
-defined('DEBUG_MODE') or define('DEBUG_MODE', false);                         //调试模式
+defined('DEBUG') or define('DEBUG', false);                         //调试模式
 defined('HOST') or define('HOST', "http://$_SERVER[HTTP_HOST]");              //主机URL
 defined('PATH') or define('PATH', substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], '/')));   //框架路径
 defined('ENCODING_AESKEY') or define('ENCODING_AESKEY', '');                  //加密AES_KEY
@@ -31,9 +31,12 @@ defined('DB_NAME') or define('DB_NAME', WECHAT_ID.'_wlight');                 //
 defined('DB_PREFIX') or define('DB_PREFIX', 'wlight');                        //框架数据库表前缀
 defined('DB_CHARSET') or define('DB_CHARSET', 'utf8');                        //数据库字符集
 defined('DB_COLLATION') or define('DB_COLLATION', DB_CHARSET.'_general_ci');  //数据库排序规则
+defined('MEMCACHE_HOST') or define('MEMCACHE_HOST', 'localhost');             //memcache地址
+defined('MEMCACHE_PORT') or define('MEMCACHE_PORT', 11211);                   //memcache端口
+defined('MEMCACHE_ENABLE') or define('MEMCACHE_ENABLE', memcacheEnable());    //memcache开关
 defined('RECORD_LIVE') or define('RECORD_LIVE', 40);                        //记录保存天数
 defined('LOG_LIVE') or define('LOG_LIVE', 30);                              //日志保存天数
-defined('MAX_CACHE') or define('MAX_CACHE', 300);                             //最大消息缓存数
+defined('MAX_CACHE') or define('MAX_CACHE', 100);                             //最大消息缓存数
 
 //文件系统常量
 define('DIR_ROOT', substr(str_replace("\\", "/", dirname(__FILE__)), 0, strrpos(str_replace("\\", "/", dirname(__FILE__)), '/')));
@@ -89,6 +92,16 @@ if (file_exists(DIR_ROOT.'/Sample.php') || file_exists(DIR_ROOT.'/Hook.php')) {
 }
 
 //内部方式
+
+function memcacheEnable() {
+  if (!class_exists('Memcache')) {
+    return false;
+  }
+  @$mem = new Memcache;
+  @$ret = $mem->connect(MEMCACHE_HOST, MEMCACHE_PORT);
+  @$mem->close();
+  return $ret;
+}
 
 function wlight_makeDirectory($dir) {
   if (!is_dir($dir)) {

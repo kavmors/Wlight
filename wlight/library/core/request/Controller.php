@@ -9,6 +9,8 @@ namespace wlight\core;
 use wlight\runtime\Log;
 use wlight\core\support\RecordManager;
 use wlight\core\support\Locker;
+use wlight\util\MemcacheHelper;
+use wlight\util\DbHelper;
 
 include (DIR_ROOT.'/wlight/library/core/request/Response.php');
 include (DIR_ROOT.'/wlight/library/core/support/Locker.class.php');
@@ -49,6 +51,18 @@ class Controller {
       return Response::EMPTY_RESPONSE;
     }
 
+    //从memcache中获取超时缓存消息
+    $memCache = $this->getReplyCache();
+    if (!empty($memCache)) {    //返回字串执行结果
+      return $memCache;
+    } elseif ($memCache === '') {   //有键无值,首次执行还没结束,直接等待下一次请求
+      sleep(7);
+      return '';
+    }
+
+    //在memcache中记录缓存值,防止第二次请求重新触发
+    $this->markReplyCache();
+
     //在所有自动回复前hook
     if ($this->hook) {
       @$this->hook->onPreExecute($this->postClass);
@@ -85,6 +99,9 @@ class Controller {
     if ($this->hook) {
       @$this->hook->onPostExecute($result);
     }
+
+    //在memcache中记录已执行完成的结果值,在下次请求时直接返回
+    $this->setReplyCache($result);
 
     return $result;
   }
@@ -260,6 +277,73 @@ class Controller {
       return "\\wlight\\msg\\$className";
     } else {
       return false;
+    }
+  }
+
+  //获取缓存排重键值
+  private function getReplyCacheKey() {
+    if (isset($this->postClass['MsgId'])) {
+      return $this->postClass['MsgId'];
+    } else {
+      return $this->postClass['FromUserName']. $this->postClass['CreateTime'];
+    }
+  }
+
+  //获取memcache缓存,字串表示已执行完成的结果,false表示没有键,空串表示执行中
+  private function getReplyCache() {
+    $key = $this->getReplyCacheKey();
+    if (MEMCACHE_ENABLE == true) {
+      $mem = new MemcacheHelper;
+      $mem = $mem->getConnector();
+      return $mem->get($key);
+    } else {
+      $db = new DbHelper;
+      $db = $db->getConnector();
+      $result = $db->query("SELECT `reply` FROM `wlight_cache` WHERE `key` = '$key'");
+      $result = $result->fetchAll(\PDO::FETCH_ASSOC);
+      if (count($result) == 0) {
+        return false;
+      }
+      return $result[0]['reply'];
+    }
+  }
+
+  //记录本次请求的键值,防止下次请求时在未执行完成的情况下重复执行
+  private function markReplyCache() {
+    $key = $this->getReplyCacheKey();
+    $time = time();
+    $max = MAX_CACHE;
+    if (MEMCACHE_ENABLE == true) {
+      $mem = new MemcacheHelper;
+      $mem = $mem->getConnector();
+      $mem->set($key, '');
+    } else {
+      $db = new DbHelper;
+      $db = $db->getConnector();
+      $db->exec("INSERT INTO `wlight_cache` VALUES('$key', '', $time)");
+      $result = $db->query("SELECT `key` FROM `wlight_cache` ORDER BY `time` DESC LIMIT $max, 1");
+      $result = $result->fetchAll(\PDO::FETCH_ASSOC);
+      if (count($result) == 0) {
+        return ;
+      }
+      $maxKey = $result[0]['key'];
+      $db->exec("DELETE FROM `wlight_cache` WHERE `key` <= $maxKey");
+    }
+  }
+
+  //记录执行后的结果
+  private function setReplyCache($result) {
+    $key = $this->getReplyCacheKey();
+    $time = time();
+    if (MEMCACHE_ENABLE == true) {
+      $mem = new MemcacheHelper;
+      $mem = $mem->getConnector();
+      $mem->set($key, $result);
+    } else {
+      $db = new DbHelper;
+      $db = $db->getConnector();
+      $ret = $db->prepare("UPDATE `wlight_cache` SET `reply` = ?, `time` = ? WHERE `key` = ?");
+      $ret->execute(array($result, $time, $key));
     }
   }
 
