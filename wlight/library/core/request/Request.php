@@ -68,7 +68,7 @@ if (isset($_GET['echostr'])) {
   }
 
   //若配置文件不存在, 重新写入配置
-  if (!file_exists(RUNTIME_ROOT.'/cache/config.json')) {
+  if (!file_exists(RUNTIME_ROOT.'/cache/config.json.php')) {
     resetCache();
   }
 } elseif (DEBUG_MODE===true) {

@@ -25,6 +25,9 @@ class Controller {
       $this->postClass = $this->parseXml($postXml);
       $this->postClass = json_decode(json_encode($this->postClass), true);
       foreach ($this->postClass as $key => $value) {
+        if (empty($value)) {
+          $value = '';
+        }
         $this->postClass[$key] = strval($value);
       }
 
@@ -311,7 +314,7 @@ class Controller {
   //记录本次请求的键值,防止下次请求时在未执行完成的情况下重复执行
   private function markReplyCache() {
     $key = $this->getReplyCacheKey();
-    $time = time();
+    $time = $this->postClass['CreateTime'];
     $max = MAX_CACHE;
     if (MEMCACHE_ENABLE == true) {
       $mem = new MemcacheHelper;
@@ -321,20 +324,19 @@ class Controller {
       $db = new DbHelper;
       $db = $db->getConnector();
       $db->exec("INSERT INTO `wlight_cache` VALUES('$key', '', $time)");
-      $result = $db->query("SELECT `key` FROM `wlight_cache` ORDER BY `time` DESC LIMIT $max, 1");
+      $result = $db->query("SELECT `time` FROM `wlight_cache` ORDER BY `time` DESC LIMIT $max, 1");
       $result = $result->fetchAll(\PDO::FETCH_ASSOC);
       if (count($result) == 0) {
         return ;
       }
-      $maxKey = $result[0]['key'];
-      $db->exec("DELETE FROM `wlight_cache` WHERE `key` <= $maxKey");
+      $maxTime = $result[0]['time'];
+      $db->exec("DELETE FROM `wlight_cache` WHERE `time` <= $maxTime");
     }
   }
 
   //记录执行后的结果
   private function setReplyCache($result) {
     $key = $this->getReplyCacheKey();
-    $time = time();
     if (MEMCACHE_ENABLE == true) {
       $mem = new MemcacheHelper;
       $mem = $mem->getConnector();
@@ -343,7 +345,7 @@ class Controller {
       $db = new DbHelper;
       $db = $db->getConnector();
       $ret = $db->prepare("UPDATE `wlight_cache` SET `reply` = ?, `time` = ? WHERE `key` = ?");
-      $ret->execute(array($result, $time, $key));
+      $ret->execute(array($result, $this->postClass['CreateTime'], $key));
     }
   }
 
