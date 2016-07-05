@@ -8,6 +8,10 @@
 namespace wlight\core;
 use wlight\runtime\Log;
 
+if (!DEBUG) {
+  ob_start();     //开启缓冲
+}
+
 include (DIR_ROOT.'/wlight/library/runtime/Log.class.php');
 include (DIR_ROOT.'/wlight/library/core/support/RecordManager.class.php');
 include (DIR_ROOT.'/wlight/library/util/MemcacheHelper.class.php');
@@ -33,6 +37,10 @@ if (isset($_GET['echostr'])) {
         break;
     }
     resetCache();
+
+    if (!DEBUG) {
+      ob_end_clean();     //清理缓冲
+    }
     echo $echoStr;
   }
 } elseif ($_SERVER['REQUEST_METHOD']=='POST') {
@@ -57,6 +65,9 @@ if (isset($_GET['echostr'])) {
     checkErrorCode($errorCode);
 
     //结果返回
+    if (!DEBUG) {
+      ob_end_clean();     //清理缓冲
+    }
     echo $response;
   } else {
     //执行逻辑
@@ -64,6 +75,9 @@ if (isset($_GET['echostr'])) {
     $response = $controller->action();
 
     //结果返回
+    if (!DEBUG) {
+      ob_end_clean();     //清理缓冲
+    }
     echo $response;
   }
 
@@ -71,7 +85,7 @@ if (isset($_GET['echostr'])) {
   if (!file_exists(RUNTIME_ROOT.'/cache/config.json.php')) {
     resetCache();
   }
-} elseif (DEBUG_MODE===true) {
+} elseif (DEBUG===true) {
   Log::getInstance()->i('action', 'debug');
 
   switch (DB_TYPE) {
