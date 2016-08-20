@@ -8,6 +8,3 @@
 - **message：** 响应自动回复开发目录
 - **resource：** 资源文件目录
 - **runtime：** 运行时目录
-> 其中application、resource目录可由开发者自行定义，请参考[配置](./Config)
-
-> runtime目录包含自动回复access\_token、jsapi\_ticket、缓存、配置记录及日志，开发者可以按需要清理目录下的文件

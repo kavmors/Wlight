@@ -1,6 +1,6 @@
 # **框架机制** #
 
-Wlight 2.0采用新的架构重构代码，实现接口逻辑与开发逻辑分离、自动回复缓存等机制。开发者在了解框架机制后，可根据需求设置不同的功能。
+Wlight 3.0采用新的架构重构代码，实现接口逻辑与开发逻辑分离、自动回复缓存等机制。开发者在了解框架机制后，可根据需求设置不同的功能。
 
 ## **接口逻辑与开发逻辑分离** ##
 
@@ -41,21 +41,24 @@ Wlight根据MsgType定位到/message/下的子目录，并遍历子目录下的�
 
 缓存为2.0版本中新增的机制。由于遍历影响效率，在遍历一次并匹配成功的情况下，可将接收的消息和对应的文件缓存起来，下一次接收到相同消息时率先遍历该文件。在此情况下，一次匹配就成功的机率很大。当前版本仅对Text类型消息和CLICK类型事件进行缓存。
 
-> 缓存使用LRU算法，有最大缓存记录数的限制，可通过配置MAX_CACHE修改，默认为300
+> 缓存使用LRU算法，有最大缓存记录数的限制，可通过配置MAX_CACHE修改，默认为100
 
-若继承Response过程中不覆盖cache则默认加入缓存。相关核心代码位于/wlight/library/core/request/Controller.php中的putToCache、getFromCache、updateCacheFile方法。缓存文件路径为/runtime/cache/msg\_text.json.php及/runtime/cache/msg\_click.json.php。
+若继承Response过程中不覆盖cache则默认加入缓存。相关核心代码位于/wlight/library/core/request/Controller.php中。缓存数据库为wlight\_cache\_msg。
 
 > 如首次接收到"Hello"，通过遍历匹配到"HelloText.php"，则下一次接收到"Hello"会率先匹配"HelloText.php"，若执行verify返回false才重新遍历所有php文件。
 
 > 并非所有消息都适合缓存。如verify中通过正则表达式"/[0-9]{6}/"匹配的，该正则表达式表示匹配任意6位数字。如加入缓存，可能因最大记录限制导致其他消息的缓存被丢弃，而相同的6位数字重现率并不高。这样会导致缓存不断刷新，降低缓存效果。
 
-## **功能统计** ##
+## **统计** ##
 
-/message/子目录下的一个php文件包含一个类，一个类为一个自动回复功能。当接收到的消息触发这个类的invoke方法，则视为这个功能被使用了一次。通过功能统计，可记录每种自动回复功能每天被使用的次数。
+统计功能数据库操作相关代码位于/wlight/library/core/support/Statis.class.php。可调用statis空间下的Statis的接口进行查询。
 
-> 功能统计记录默认保存40天，可通过配置RECORD_LIVE修改
+### **功能统计** ###
+message子目录下的一个php文件包含一个类，为一个自动回复功能。当接收到的消息触发这个类的invoke方法，则视为这个功能被使用了一次。通过功能统计，可记录每种自动回复功能每天被使用的次数。
 
-> 在继承Response过程中，覆盖tag方法并返回一个字符串即可将该回复功能加入统计。返回null（或不覆盖）表示这个功能不需加入统计
+> 功能统计记录默认保存40天，可通过配置STATIS_LIVE修改
+
+> 在继承Response过程中，覆盖tag方法并返回一个字符串即可将该回复功能加入统计。返回null（或不覆盖）表示这个功能不需加入功能统计
 
 核心代码位于/wlight/library/core/request/Controller.php中的callStatistics：
 
@@ -63,9 +66,11 @@ Wlight根据MsgType定位到/message/下的子目录，并遍历子目录下的�
 
 其中，$className为类名，作该功能的标识，$tag为用户覆盖tag方法返回的字符串。
 
-在数据库中，涉及统计功能的表为wlight\_tag和wlight\_tag\_map（wlight为表前缀，可通过DB_PREFIX修改）。wlight\_tag首字段"date"为日期，其余字段为各个功能的标识（加入新功能修改表结构，添加一列）。wlight\_tag\_map包含字段"key"和"map"，代表功能标识和该功能的标签(tag)。
+在数据库中，涉及统计功能的表为wlight\_statis\_tag和wlight\-statis\_tag\_map（wlight为表前缀，可通过DB_PREFIX修改）。wlight\_statis\_tag首字段"date"为日期，其余字段为各个功能的标识（加入新功能修改表结构，添加一列）。wlight\_statis\_tag\_map包含字段"key"和"map"，代表功能标识和该功能的标签(tag)。
 
-> 数据库操作相关代码位于/wlight/library/statistics/Tag.class.php
+### **消息统计** ###
+
+所有未匹配到关键字的消息均记录在消息统计（数据库为wlight\_statis\_message），记录消息发生的时间、内容、类型及发送用户。
 
 ## **日志** ##
 

@@ -2,19 +2,21 @@
 
 Wlight框架中的API类是对微信公众平台API接口的封装，开发者不需要根据官方文档自己发送Http请求，只需调用类库中的方法即可。
 
-> 尽管Wlight框架对大部分API类进行封装，但还是希望开发者在熟悉官方文档后再使用类库。同时建议在使用类库开发过程中参考对应的官方文档
+> Wlight框架对大部分API类进行封装，但还是希望开发者在熟悉官方文档后再使用类库。同时建议在使用类库开发过程中参考对应的官方文档
 
 ## **命名空间与分类** ##
 
 API类库位于/wlight/library/api，辅助类位于/wlight/library/util。为了使开发者更方便地导入不同的类，Wlight根据命名空间分类各个接口类：（以下，左侧为空间名，右侧为类名）
 
-- **basic**: AccessToken, IpList, JsapiTicket
+- **basic**: AccessToken, IpList
 - **customservice**: Account, Message
 - **media**: Media
 - **menu**: Menu, MenuDesigner
+- **oauth**: Oauth
 - **user**: Groups, Info
-- **web**: JsapiTicket, Jssdk, Oauth, OauthRedirect
-- **util**: DbHelper, HttpClient
+- **web**: JsapiTicket, Jssdk
+- **statis**: Statis
+- **util**: ArrayHelper, DbHelper, FileUtils, HttpClient
 
 ## **导入API类** ##
 
@@ -61,6 +63,8 @@ ApiException中框架定义的错误码及说明如下：
 - **ILLEGAL\_JSON\_ERROR\_CODE**: -103，json内含字段出错
 - **FILE\_NOT\_EXISTS\_ERROR\_CODE**: -104，上传文件不存在
 - **OAUTH\_REJECT\_ERROR\_CODE**: -105，用户拒绝授权
+- **FILE\_LOCK\_ERROR\_CODE**: -106，文件锁操作异常
+- **UNKNOW\_ERROR\_CODE**: -199，未知错误
 
 其他错误码请参考[微信公众平台开发者文档-全局返回码说明](http://mp.weixin.qq.com/wiki/17/fa4e1434e57290788bde25603fa2fcbd.html)
 
