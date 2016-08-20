@@ -1,16 +1,22 @@
 <?php
 /**
  * 获取JsapiTicket(调用js接口凭证)
+ * http://mp.weixin.qq.com/wiki/11/74ad127cc054f6b80759c40f77ec03db.html#.E9.99.84.E5.BD.951-JS-SDK.E4.BD.BF.E7.94.A8.E6.9D.83.E9.99.90.E7.AD.BE.E5.90.8D.E7.AE.97.E6.B3.95
  * @author  KavMors(kavmors@163.com)
- * @since   2.0
+ *
+ * string get(boolean)
  */
 
 namespace wlight\web;
 use wlight\basic\AccessToken;
 use wlight\util\HttpClient;
 use wlight\runtime\ApiException;
-use wlight\core\support\Locker;
-use wlight\core\support\RecordManager;
+use wlight\runtime\Log;
+
+include_once (DIR_ROOT.'/wlight/library/api/basic/AccessToken.class.php');
+include_once (DIR_ROOT.'/wlight/library/util/HttpClient.class.php');
+include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
+include_once (DIR_ROOT.'/wlight/library/runtime/Log.class.php');
 
 class JsapiTicket {
   private $appid;
@@ -23,12 +29,6 @@ class JsapiTicket {
    * @throws ApiException
    */
   public function __construct() {
-    include_once (DIR_ROOT.'/wlight/library/api/basic/AccessToken.class.php');
-    include_once (DIR_ROOT.'/wlight/library/util/HttpClient.class.php');
-    include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
-    include_once (DIR_ROOT.'/wlight/library/core/support/Locker.class.php');
-    include_once (DIR_ROOT.'/wlight/library/core/support/RecordManager.class.php');
-
     $this->appid = APP_ID;
     $this->runtimeRoot = RUNTIME_ROOT;
     $this->file = $this->loadTicketRecord();
@@ -38,8 +38,8 @@ class JsapiTicket {
 
   /**
    * 获取Jsapi Ticket(或刷新Ticket值)
-   * @param boolean $reload - true表示重新获取最新Ticket值
-   * @return string - token字符串(请求失败返回false)
+   * @param boolean $reload true表示重新获取最新Ticket值
+   * @return string token字符串(请求失败返回false)
    * @throws ApiException
    */
   public function get($reload = false) {
@@ -47,8 +47,9 @@ class JsapiTicket {
       return $this->reloadTicket();
     }
     if (file_exists($this->file)) {
-      $reader = new RecordManager($this->file);
-      $record = json_decode($reader->read(), true);
+      $content = file_get_contents($this->file);
+      $content = trim(strstr($content, '{'));
+      $record = json_decode($content, true);
 
       if (!$record) {   //json结构检验
         return $this->reloadTicket();
@@ -64,33 +65,45 @@ class JsapiTicket {
 
   //刷新ticket值
   private function reloadTicket() {
-    Locker::getInstance(LOCK_JSAPI_TICKET)->lock();
+    $fp = fopen($this->file, "w");
+    if (flock($fp, LOCK_EX)) {
+      Log::i('Lock', 'JsapiTicket');
+      try {
+      	$url = $this->url."?access_token=$this->accessToken&type=wx_card";
+        $httpClient = new HttpClient($url);
+        $httpClient->get();
+        $stream = $httpClient->jsonToArray();
 
-    $url = $this->url."/?access_token=$this->accessToken&type=jsapi";
-    $httpClient = new HttpClient($url);
-    $httpClient->get();
-    $stream = $httpClient->jsonToArray();
+        if (isset($stream['ticket'])) {
+          //提取参数
+          $jsapi_ticket = $stream['ticket'];
+          $expires_in = $stream['expires_in'];
+          $expires_time = intval(time())+intval($expires_in)-60;    //60s超时缓冲
+          $file_stream = json_encode(array('expires_time'=>$expires_time, 'jsapi_ticket'=>$jsapi_ticket));
 
-    if (isset($stream['ticket'])) {
-      //提取参数
-      $jsapi_ticket = $stream['ticket'];
-      $expires_in = $stream['expires_in'];
-      $expires_time = intval(time())+intval($expires_in)-60;    //60s超时缓冲
-      $file_stream = json_encode(array('expires_time'=>$expires_time, 'jsapi_ticket'=>$jsapi_ticket));
+          fwrite($fp, "<?php exit; ?>\n");
+          fwrite($fp, $file_stream);
 
-      $writer = new RecordManager($this->file);
-      $writer->write($file_stream);
-
-      Locker::getInstance(LOCK_JSAPI_TICKET)->unlock();
-
-      return $jsapi_ticket;
+          Log::i('Unlock', 'JsapiTicket');
+          flock($fp, LOCK_UN);
+          fclose($fp);
+          @chmod($this->file, DEFAULT_PERMISSION);
+          return $jsapi_ticket;
+        } else {
+          throw ApiException::throws(ApiException::ERROR_JSON_ERROR_CODE, 'response: '.$httpClient->getResponse());
+        }
+      } catch (ApiException $e) {
+        Log::i('Unlock', 'JsapiTicket');
+        flock($fp, LOCK_UN);
+        fclose($fp);
+        throw $e;
+        return false;
+      }
     } else {
-      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
+      fclose($fp);
+      throw ApiException::throws(ApiException::FILE_LOCK_ERROR_CODE);
+      return false;
     }
-
-    //never
-    Locker::getInstance(LOCK_JSAPI_TICKET)->unlock();
-    return false;
   }
 
   //获取当前appid下的Ticket记录文件

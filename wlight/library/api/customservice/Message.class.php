@@ -1,14 +1,28 @@
 <?php
 /**
  * 客服接口发消息实现类
+ * http://mp.weixin.qq.com/wiki/1/70a29afed17f56d537c833f89be979c9.html#.E5.AE.A2.E6.9C.8D.E6.8E.A5.E5.8F.A3-.E5.8F.91.E6.B6.88.E6.81.AF
  * @author  KavMors(kavmors@163.com)
- * @since   2.0
+ *
+ * void setAccount(string)
+ * boolean sendText(string, string)
+ * boolean sendImage(string, string)
+ * boolean sendVoice(string, string)
+ * boolena sendVideo(string, string, string, string, string)
+ * boolean sendMusic(string, string, string, string, string, string)
+ * boolean sendNews(string, array)
+ * boolean sendMpnews(string, string)
+ * boolean sendCard(string, string, array)
  */
 
 namespace wlight\customservice;
 use wlight\basic\AccessToken;
 use wlight\util\HttpClient;
 use wlight\runtime\ApiException;
+
+include_once (DIR_ROOT.'/wlight/library/api/basic/AccessToken.class.php');
+include_once (DIR_ROOT.'/wlight/library/util/HttpClient.class.php');
+include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
 
 class Message {
   private $url = 'https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=';
@@ -19,19 +33,15 @@ class Message {
   /**
    * @throws ApiException
    */
-	public function __construct() {
-    include_once (DIR_ROOT.'/wlight/library/api/basic/AccessToken.class.php');
-    include_once (DIR_ROOT.'/wlight/library/util/HttpClient.class.php');
-    include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
-
+  public function __construct() {
     $accessToken = new AccessToken();
     $this->accessToken = $accessToken->get();
     $this->postfix = WECHAT_ID;
-	}
+  }
 
   /**
    * 指定发送消息的客服帐号
-   * @param string $account - 客服帐号
+   * @param string $account 客服帐号
    */
   public function setAccount($account) {
     $this->account = $this->addPostfix($account);
@@ -39,9 +49,9 @@ class Message {
 
   /**
    * 发送文本消息
-   * @param string $user - 接收方
-   * @param string $text - 文本消息
-   * @return boolean - true表示成功
+   * @param string $user 接收方
+   * @param string $text 文本消息
+   * @return boolean true表示成功
    * @throws ApiException
    */
   public function sendText($user, $text) {
@@ -58,9 +68,9 @@ class Message {
 
   /**
    * 发送图片消息
-   * @param string $user - 接收方
-   * @param string $mediaId - 图片媒体id
-   * @return boolean - true表示成功
+   * @param string $user 接收方
+   * @param string $mediaId 图片媒体id
+   * @return boolean true表示成功
    * @throws ApiException
    */
   public function sendImage($user, $mediaId) {
@@ -77,9 +87,9 @@ class Message {
 
   /**
    * 发送语音消息
-   * @param string $user - 接收方
-   * @param string $mediaId - 语音媒体id
-   * @return boolean - true表示成功
+   * @param string $user 接收方
+   * @param string $mediaId 语音媒体id
+   * @return boolean true表示成功
    * @throws ApiException
    */
   public function sendVoice($user, $mediaId) {
@@ -96,15 +106,15 @@ class Message {
 
   /**
    * 发送视频消息
-   * @param string $user - 接收方
-   * @param string $mediaId - 视频媒体id
-   * @param string $thumbMediaId - 缩略图媒体id
-   * @param string $title - 可选,视频标题
-   * @param string $description - 可选,视频描述
-   * @return boolean - true表示成功
+   * @param string $user 接收方
+   * @param string $mediaId 视频媒体id
+   * @param string $thumbMediaId 缩略图媒体id
+   * @param string $title 可选,视频标题
+   * @param string $description 可选,视频描述
+   * @return boolean true表示成功
    * @throws ApiException
    */
-  public function sendVideo($mediaId, $thumbMediaId, $title='', $description='') {
+  public function sendVideo($user, $mediaId, $thumbMediaId, $title='', $description='') {
     $json = array(
       'touser' => $user,
       'msgtype' => 'video',
@@ -121,16 +131,16 @@ class Message {
 
   /**
    * 发送音乐消息
-   * @param string $user - 接收方
-   * @param string $title - 音乐标题
-   * @param string $description - 音乐描述
-   * @param string $musicUrl - 音乐链接
-   * @param string $hqMusicUrl - 音乐高品质资源链接
-   * @param string $thumbMediaId - 缩略图媒体id
-   * @return boolean - true表示成功
+   * @param string $user 接收方
+   * @param string $title 音乐标题
+   * @param string $description 音乐描述
+   * @param string $musicUrl 音乐链接
+   * @param string $hqMusicUrl 音乐高品质资源链接
+   * @param string $thumbMediaId 缩略图媒体id
+   * @return boolean true表示成功
    * @throws ApiException
    */
-  public function sendMusic($title, $description, $musicUrl, $hqMusicUrl, $thumbMediaId) {
+  public function sendMusic($user, $title, $description, $musicUrl, $hqMusicUrl, $thumbMediaId) {
     $json = array(
       'touser' => $user,
       'msgtype' => 'music',
@@ -148,11 +158,11 @@ class Message {
 
   /**
    * 发送图文消息(跳转到链接)
-   * @param string $user - 接收方
-   * @param array $articles - (二维数组)图文内容, 包含字段: Title, Description, PicUrl, Url
+   * @param string $user 接收方
+   * @param array $articles (二维数组)图文内容, 包含字段: Title, Description, PicUrl, Url
    * @example array(
    *      array('Title'=>'1', 'Description'=>'', 'PicUrl'=>'1.jpg', 'Url'=>''))
-   * @return boolean - true表示成功
+   * @return boolean true表示成功
    * @throws ApiException
    */
   public function sendNews($user, $articles) {
@@ -176,9 +186,9 @@ class Message {
 
   /**
    * 发送图文消息(跳转到图文页面)
-   * @param string $user - 接收方
-   * @param string $mediaId - 图文媒体id
-   * @return boolean - true表示成功
+   * @param string $user 接收方
+   * @param string $mediaId 图文媒体id
+   * @return boolean true表示成功
    * @throws ApiException
    */
   public function sendMpnews($user, $mediaId) {
@@ -195,10 +205,10 @@ class Message {
 
   /**
    * 发送卡券
-   * @param string $user - 接收方
-   * @param string $cardId - 卡券id
-   * @param array $cardExt - 卡券card_ext字段信息
-   * @return boolean - true表示成功
+   * @param string $user 接收方
+   * @param string $cardId 卡券id
+   * @param array $cardExt 卡券card_ext字段信息
+   * @return boolean true表示成功
    * @throws ApiException
    */
   public function sendCard($user, $cardId, $cardExt) {
@@ -225,7 +235,7 @@ class Message {
     if (isset($result['errcode']) && $result['errcode']==0) {
       return true;
     } else {
-      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::throws(ApiException::ERROR_JSON_ERROR_CODE, 'response: '.$httpClient->getResponse());
     }
 
     //never

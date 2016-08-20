@@ -2,127 +2,63 @@
 /**
  * 框架基础入口文件
  * @author  KavMors(kavmors@163.com)
- * @since   2.0
- * @version 2.2
+ * @version 3.0
  */
 
 //版本信息
-define('WLIGHT', 'Wlight');
-define('WLIGHT_VERSION', '2.2');
+define('WLIGHT', 'WLIGHT');
+define('WLIGHT_VERSION', '3.0');
 
-//检查用户配置完整性
-defined('APP_ID') or die('APP_ID miss !');
-defined('APP_SECRET') or die('APP_SECRET miss !');
-defined('APP_NAME') or die('APP_NAME miss !');
-defined('WECHAT_ID') or die('WECHAT_ID miss !');
-defined('TOKEN') or die('TOKEN miss !');
-defined('DB_USER') or die('DB_USER miss !');
-defined('DB_PWD') or die('DB_PWD miss !');
-
-//常量默认值定义
-defined('DEBUG') or define('DEBUG', false);                         //调试模式
-defined('HOST') or define('HOST', "http://$_SERVER[HTTP_HOST]");              //主机URL
-defined('PATH') or define('PATH', substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], '/')));   //框架路径
+//平台配置
+defined('APP_ID') && APP_ID != '' or die('APP_ID miss');                      //appid
+defined('APP_SECRET') && APP_SECRET != '' or die('APP_SECRET miss');          //appsecret
+defined('APP_NAME') && APP_NAME != '' or die('APP_NAME miss');                //应用名称
+defined('WECHAT_ID') && WECHAT_ID != '' or die('WECHAT_ID miss');             //平台微信号
+defined('TOKEN') && TOKEN != '' or die('TOKEN miss');                         //token
 defined('ENCODING_AESKEY') or define('ENCODING_AESKEY', '');                  //加密AES_KEY
+
+//数据库配置
+defined('DB_USER') && DB_USER != '' or die('DB_USER miss');                   //数据库用户名
+defined('DB_PWD') && DB_PWD != '' or die('DB_PWD miss');                      //数据库密码
 defined('DB_TYPE') or define('DB_TYPE', 'mysql');                             //数据库类型
-defined('DB_HOST') or define('DB_HOST', 'localhost');                         //数据库地址
-defined('DB_PORT') or define('DB_PORT', '3306');                              //数据库监听端口
+defined('DB_HOST') or define('DB_HOST', 'localhost');                         //地址
+defined('DB_PORT') or define('DB_PORT', '3306');                              //监听端口
 defined('DB_NAME') or define('DB_NAME', WECHAT_ID.'_wlight');                 //数据库名
 defined('DB_PREFIX') or define('DB_PREFIX', 'wlight');                        //框架数据库表前缀
-defined('DB_CHARSET') or define('DB_CHARSET', 'utf8');                        //数据库字符集
-defined('DB_COLLATION') or define('DB_COLLATION', DB_CHARSET.'_general_ci');  //数据库排序规则
-defined('MEMCACHE_HOST') or define('MEMCACHE_HOST', 'localhost');             //memcache地址
-defined('MEMCACHE_PORT') or define('MEMCACHE_PORT', 11211);                   //memcache端口
-defined('MEMCACHE_ENABLE') or define('MEMCACHE_ENABLE', memcacheEnable());    //memcache开关
-defined('RECORD_LIVE') or define('RECORD_LIVE', 40);                        //记录保存天数
-defined('LOG_LIVE') or define('LOG_LIVE', 30);                              //日志保存天数
+defined('DB_CHARSET') or define('DB_CHARSET', 'utf8');                        //字符集
+defined('DB_COLLATION') or define('DB_COLLATION', DB_CHARSET.'_general_ci');  //排序规则
+
+//File System
+define('DIR_ROOT', substr(str_replace("\\", "/", dirname(__FILE__)), 0, strrpos(str_replace("\\", "/", dirname(__FILE__)), '/')));
+define('APP_ROOT', DIR_ROOT.'/application');                                  //Application module路径
+define('RES_ROOT', DIR_ROOT.'/resource');                                     //Resource module路径
+define('MSG_ROOT', DIR_ROOT.'/message');                                      //Message module路径
+define('RUNTIME_ROOT', DIR_ROOT.'/runtime');                                  //runtime路径
+
+//URL
+defined('HOST') or define('HOST', "http://$_SERVER[HTTP_HOST]");              //主机URL
+defined('PATH') or define('PATH', substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], '/')));   //框架路径
+define('WLIGHT_URL', HOST.PATH);                                              //根目录url
+define('APP_URL', WLIGHT_URL.'/application');                                 //Application module url
+define('RES_URL', WLIGHT_URL.'/resource');                                    //Resource module url
+
+//运行时配置
+defined('DEBUG') or define('DEBUG', false);                                   //调试模式
+defined('DEFAULT_TIMEZONE') or define('DEFAULT_TIMEZONE', 'PRC');             //默认时区
+defined('DEFAULT_PERMISSION') or define('DEFAULT_PERMISSION', 0775);          //默认文件权限
+defined('STATIS_LIVE') or define('STATIS_LIVE', 40);                          //统计记录保存天数
+defined('LOG_LIVE') or define('LOG_LIVE', 30);                                //日志保存天数
 defined('MAX_CACHE') or define('MAX_CACHE', 100);                             //最大消息缓存数
 
-//文件系统常量
-define('DIR_ROOT', substr(str_replace("\\", "/", dirname(__FILE__)), 0, strrpos(str_replace("\\", "/", dirname(__FILE__)), '/')));
-define('RUNTIME_ROOT', DIR_ROOT.'/runtime');
-define('MSG_ROOT', DIR_ROOT.'/message');
-
-//运行时信息配置常量
-defined('DEFAULT_TIMEZONE') or define('DEFAULT_TIMEZONE', 'PRC');
-
-//以下目录对应常量可供用户自定义
-defined('APP_ROOT') or define('APP_ROOT', DIR_ROOT.'/application');
-defined('RES_ROOT') or define('RES_ROOT', DIR_ROOT.'/resource');
-
-//文件锁
-define('LOCK_CACHE', RUNTIME_ROOT.'/lock/cache.lock');
-define('LOCK_ACCESS_TOKEN', RUNTIME_ROOT.'/lock/access_token.lock');
-define('LOCK_JSAPI_TICKET', RUNTIME_ROOT.'/lock/jsapi_ticket.lock');
-
-//其他选项
-date_default_timezone_set(DEFAULT_TIMEZONE);    //时区
+//执行配置
+date_default_timezone_set(DEFAULT_TIMEZONE);
 
 //初始化部署
 if (file_exists(DIR_ROOT.'/Sample.php') || file_exists(DIR_ROOT.'/Hook.php')) {
-//创建目录
-  wlight_makeDirectory(RUNTIME_ROOT);
-  wlight_makeDirectory(RUNTIME_ROOT.'/cache');
-  wlight_makeDirectory(RUNTIME_ROOT.'/log');
-  wlight_makeDirectory(RUNTIME_ROOT.'/log/info');
-  wlight_makeDirectory(RUNTIME_ROOT.'/log/error');
-  wlight_makeDirectory(RUNTIME_ROOT.'/lock');
-  wlight_makeDirectory(MSG_ROOT);
-  wlight_makeDirectory(MSG_ROOT.'/text');
-  wlight_makeDirectory(MSG_ROOT.'/image');
-  wlight_makeDirectory(MSG_ROOT.'/voice');
-  wlight_makeDirectory(MSG_ROOT.'/video');
-  wlight_makeDirectory(MSG_ROOT.'/shortvideo');
-  wlight_makeDirectory(MSG_ROOT.'/link');
-  wlight_makeDirectory(MSG_ROOT.'/location');
-  wlight_makeDirectory(MSG_ROOT.'/event');
-  wlight_makeDirectory(MSG_ROOT.'/event/subscribe');
-  wlight_makeDirectory(MSG_ROOT.'/event/unsubscribe');
-  wlight_makeDirectory(MSG_ROOT.'/event/CLICK');
-  wlight_makeDirectory(MSG_ROOT.'/event/SCAN');
-  wlight_makeDirectory(MSG_ROOT.'/event/LOCATION');
-  wlight_makeDirectory(MSG_ROOT.'/event/VIEW');
-  wlight_makeDirectory(APP_ROOT);
-  wlight_makeDirectory(RES_ROOT);
-  wlight_moveFile(DIR_ROOT.'/Hook.php', MSG_ROOT.'/Hook.php');
-  wlight_moveFile(DIR_ROOT.'/Sample.php', MSG_ROOT.'/text/Sample.php');
-  wlight_makeFile(LOCK_CACHE);
-  wlight_makeFile(LOCK_ACCESS_TOKEN);
-  wlight_makeFile(LOCK_JSAPI_TICKET);
-}
-
-//内部方式
-
-function memcacheEnable() {
-  if (!class_exists('Memcache')) {
-    return false;
-  }
-  @$mem = new Memcache;
-  @$ret = $mem->connect(MEMCACHE_HOST, MEMCACHE_PORT);
-  @$mem->close();
-  return $ret;
-}
-
-function wlight_makeDirectory($dir) {
-  if (!is_dir($dir)) {
-    @mkdir($dir);
-    @chmod($dir, 0775);
-  }
-}
-
-function wlight_makeFile($file) {
-  if (!file_exists($file)) {
-    file_put_contents($file, "");
-    @chmod($file, 0775);
-  }
-}
-
-function wlight_moveFile($from, $to) {
-  @rename($from, $to);
-  @chmod($to, 0775);
+  include (DIR_ROOT.'/wlight/library/core/support/Deployer.class.php');
+  wlight\core\support\Deployer::initFileSystem();
 }
 
 //Request.php接收
-require(DIR_ROOT.'/wlight/library/core/request/Request.php');
-
+require (DIR_ROOT.'/wlight/library/core/request/Request.php');
 ?>

@@ -3,7 +3,6 @@
  * 消息逻辑处理的基本类
  * 集成此类并覆盖相关方法, 以完成验证和消息回复
  * @author  KavMors(kavmors@163.com)
- * @since   2.0
  */
 
 namespace wlight\core;
@@ -65,18 +64,18 @@ class Response {
 
   /**
    * 引入一个类库文件,并返回该类实例对象
-   * @param $namespace - 类所在的空间
-   * @param $className - 类名
+   * @param $namespace 类所在的空间
+   * @param $className 类名
    * @return 实例对象
    */
   public final function import($namespace, $className) {
     $wholeClass = "\\wlight\\$namespace\\$className";
-    //除了util外,其余类库在/api内
-    if ($namespace!='util') {
+    if ($namespace != 'util' && $namespace != 'statis') {
       $namespace = "api/$namespace";
     }
+
     include_once(DIR_ROOT."/wlight/library/$namespace/$className.class.php");
-    $instance = new $wholeClass();
+    $instance = new $wholeClass;
     return $instance;
   }
 
@@ -87,18 +86,18 @@ class Response {
   /**
    * 封装文本消息
    * @param string $text
-   * @return string - response xml
+   * @return string response xml
    */
   public final function makeText($text) {
     $msgType = 'text';
     $createTime = time();
     $response = "<xml>
-          <ToUserName><![CDATA[%s]]></ToUserName>
-          <FromUserName><![CDATA[%s]]></FromUserName>
-          <CreateTime>%s</CreateTime>
-          <MsgType><![CDATA[%s]]></MsgType>
-          <Content><![CDATA[%s]]></Content>
-          </xml>";
+<ToUserName><![CDATA[%s]]></ToUserName>
+<FromUserName><![CDATA[%s]]></FromUserName>
+<CreateTime>%s</CreateTime>
+<MsgType><![CDATA[%s]]></MsgType>
+<Content><![CDATA[%s]]></Content>
+</xml>";
     $reply = sprintf($response, $this->map['FromUserName'], $this->map['ToUserName'], $createTime, $msgType, $text);
     return $reply;
   }
@@ -106,20 +105,20 @@ class Response {
   /**
    * 封装图片消息
    * @param integer $mediaId
-   * @return string - response xml
+   * @return string response xml
    */
   public final function makeImage($mediaId) {
     $createTime = time();
     $msgType = 'image';
     $response = "<xml>
-          <ToUserName><![CDATA[%s]]></ToUserName>
-          <FromUserName><![CDATA[%s]]></FromUserName>
-          <CreateTime>%s</CreateTime>
-          <MsgType><![CDATA[%s]]></MsgType>
-          <Image>
-          <MediaId><![CDATA[%s]]></MediaId>
-          </Image>
-          </xml>";
+<ToUserName><![CDATA[%s]]></ToUserName>
+<FromUserName><![CDATA[%s]]></FromUserName>
+<CreateTime>%s</CreateTime>
+<MsgType><![CDATA[%s]]></MsgType>
+<Image>
+<MediaId><![CDATA[%s]]></MediaId>
+</Image>
+</xml>";
     $reply = sprintf($response, $this->map['FromUserName'], $this->map['ToUserName'], $createTime, $msgType, $mediaId);
     return $reply;
   }
@@ -127,20 +126,20 @@ class Response {
   /**
    * 封装语音消息
    * @param integer $mediaId
-   * @return string - response xml
+   * @return string response xml
    */
   public final function makeVoice($mediaId) {
     $createTime = time();
     $msgType = 'voice';
     $response = "<xml>
-          <ToUserName><![CDATA[%s]]></ToUserName>
-          <FromUserName><![CDATA[%s]]></FromUserName>
-          <CreateTime>%s</CreateTime>
-          <MsgType><![CDATA[%s]]></MsgType>
-          <Voice>
-          <MediaId><![CDATA[%s]]></MediaId>
-          </Voice>
-          </xml>";
+<ToUserName><![CDATA[%s]]></ToUserName>
+<FromUserName><![CDATA[%s]]></FromUserName>
+<CreateTime>%s</CreateTime>
+<MsgType><![CDATA[%s]]></MsgType>
+<Voice>
+<MediaId><![CDATA[%s]]></MediaId>
+</Voice>
+</xml>";
     $reply = sprintf($response, $this->map['FromUserName'], $this->map['ToUserName'], $createTime, $msgType, $mediaId);
     return $reply;
   }
@@ -148,22 +147,22 @@ class Response {
   /**
    * 封装视频消息
    * @param string $mediaId
-   * @return string - response xml
+   * @return string response xml
    */
   public final function makeVideo($mediaId, $title='', $description='') {
     $createTime = time();
     $msgType = 'video';
     $response = "<xml>
-          <ToUserName><![CDATA[%s]]></ToUserName>
-          <FromUserName><![CDATA[%s]]></FromUserName>
-          <CreateTime>%s</CreateTime>
-          <MsgType><![CDATA[%s]]></MsgType>
-          <Video>
-          <MediaId><![CDATA[%s]]></MediaId>
-          <Title><![CDATA[%s]]></Title>
-          <Description><![CDATA[%s]]></Description>
-          </Video>
-          </xml>";
+<ToUserName><![CDATA[%s]]></ToUserName>
+<FromUserName><![CDATA[%s]]></FromUserName>
+<CreateTime>%s</CreateTime>
+<MsgType><![CDATA[%s]]></MsgType>
+<Video>
+<MediaId><![CDATA[%s]]></MediaId>
+<Title><![CDATA[%s]]></Title>
+<Description><![CDATA[%s]]></Description>
+</Video>
+</xml>";
     $reply = sprintf($response, $this->map['FromUserName'], $this->map['ToUserName'], $createTime, $msgType, $mediaId, $title, $description);
     return $reply;
   }
@@ -175,21 +174,21 @@ class Response {
    * @param string $musicUrl
    * @param string $hqMusicUrl
    * @param integer $thumbMediaId
-   * @return string - response xml
+   * @return string response xml
    */
   public final function makeMusic($title, $description, $musicUrl, $hqMusicUrl='', $thumbMediaId='') {
     $createTime = time();
     $msgType = 'music';
     $response = "<xml>
-          <ToUserName><![CDATA[%s]]></ToUserName>
-          <FromUserName><![CDATA[%s]]></FromUserName>
-          <CreateTime>%s</CreateTime>
-          <MsgType><![CDATA[%s]]></MsgType>
-          <Music>
-          <Title><![CDATA[%s]]></Title>
-          <Description><![CDATA[%s]]></Description>
-          <MusicUrl><![CDATA[%s]]></MusicUrl>
-          <HQMusicUrl><![CDATA[%s]]></HQMusicUrl>";
+<ToUserName><![CDATA[%s]]></ToUserName>
+<FromUserName><![CDATA[%s]]></FromUserName>
+<CreateTime>%s</CreateTime>
+<MsgType><![CDATA[%s]]></MsgType>
+<Music>
+<Title><![CDATA[%s]]></Title>
+<Description><![CDATA[%s]]></Description>
+<MusicUrl><![CDATA[%s]]></MusicUrl>
+<HQMusicUrl><![CDATA[%s]]></HQMusicUrl>";
     if ($thumbMediaId!=='') {
       $response .= "<ThumbMediaId><![CDATA[$thumbMediaId]]></ThumbMediaId>";
     }
@@ -200,10 +199,10 @@ class Response {
 
   /**
    * 封装图文消息
-   * @param array $articles - (二维数组)图文内容, 包含字段: Title, Description, PicUrl, Url
+   * @param array $articles (二维数组)图文内容, 包含字段: Title, Description, PicUrl, Url
    * @example array(
    *      array('Title'=>'1', 'Description'=>'', 'PicUrl'=>'1.jpg', 'Url'=>''))
-   * @return string - response xml
+   * @return string response xml
    */
   public final function makeNews($articles) {
     if (isset($articles['Title'])) $articles = array($articles);
@@ -215,42 +214,42 @@ class Response {
       foreach ($articles as $item) {
         if (is_array($item)) {
           $temp = "<item>
-              <Title><![CDATA[%s]]></Title>
-              <Description><![CDATA[%s]]></Description>
-              <PicUrl><![CDATA[%s]]></PicUrl>
-              <Url><![CDATA[%s]]></Url>
-              </item>";
+<Title><![CDATA[%s]]></Title>
+<Description><![CDATA[%s]]></Description>
+<PicUrl><![CDATA[%s]]></PicUrl>
+<Url><![CDATA[%s]]></Url>
+</item>";
           $strItem .= sprintf($temp, $item['Title'], $item['Description'], $item['PicUrl'], $item['Url']);
         }
       }
     }
     $response = "<xml>
-          <ToUserName><![CDATA[%s]]></ToUserName>
-          <FromUserName><![CDATA[%s]]></FromUserName>
-          <CreateTime>%s</CreateTime>
-          <MsgType><![CDATA[%s]]></MsgType>
-          <ArticleCount>%s</ArticleCount>
-          <Articles>
-          %s
-          </Articles>
-          </xml>";
+<ToUserName><![CDATA[%s]]></ToUserName>
+<FromUserName><![CDATA[%s]]></FromUserName>
+<CreateTime>%s</CreateTime>
+<MsgType><![CDATA[%s]]></MsgType>
+<ArticleCount>%s</ArticleCount>
+<Articles>
+%s
+</Articles>
+</xml>";
     $reply = sprintf($response, $this->map['FromUserName'], $this->map['ToUserName'], $createTime, $msgType, $count, $strItem);
     return $reply;
   }
 
   /**
    * 转到多客服
-   * @param string $account - 可选,指定转发到的客服帐号
-   * @return string - response xml
+   * @param string $account 可选,指定转发到的客服帐号
+   * @return string response xml
    */
   public final function sendToService($account='') {
     $createTime = time();
     $msgType = 'transfer_customer_service';
     $response = "<xml>
-          <ToUserName><![CDATA[%s]]></ToUserName>
-          <FromUserName><![CDATA[%s]]></FromUserName>
-          <CreateTime>%s</CreateTime>
-          <MsgType><![CDATA[%s]]></MsgType>";
+<ToUserName><![CDATA[%s]]></ToUserName>
+<FromUserName><![CDATA[%s]]></FromUserName>
+<CreateTime>%s</CreateTime>
+<MsgType><![CDATA[%s]]></MsgType>";
     if ($account!=='') {
       //处理account后缀
       if (stripos($account, '@')===false) {

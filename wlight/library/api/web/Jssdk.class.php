@@ -1,11 +1,19 @@
 <?php
 /**
  * 微信内网页开发功能(jssdk)开发类库
+ * http://mp.weixin.qq.com/wiki/11/74ad127cc054f6b80759c40f77ec03db.html
  * @author  KavMors(kavmors@163.com)
- * @since   2.0
+ *
+ * void setDebug(boolean)
+ * string config(string/array)
+ * string getReference(string)
+ * string getReferenceLabel(string)
+ * array getSignPackage()
  */
 
 namespace wlight\web;
+
+include_once (DIR_ROOT.'/wlight/library/api/web/JsapiTicket.class.php');
 
 class Jssdk {
   private $debug = 'false';
@@ -13,7 +21,6 @@ class Jssdk {
   private $ticket;
 
   public function __construct() {
-    include_once (DIR_ROOT.'/wlight/library/api/web/JsapiTicket.class.php');
     $this->appId = APP_ID;
     $ticket = new JsapiTicket();
     $this->ticket = $ticket->get();
@@ -21,7 +28,7 @@ class Jssdk {
 
   /**
    * 设置调试模式
-   * @param boolean $debug - true为开启调试模式
+   * @param boolean $debug true为开启调试模式
    */
   public function setDebug($debug) {
     $this->debug = $debug? 'true': 'false';
@@ -29,8 +36,8 @@ class Jssdk {
 
   /**
    * 获取jsapi接口的配置信息
-   * @param string/array $apiList - 需要使用的JS接口列表
-   * @return string - 验证配置对应的js语句,可直接在js脚本中使用
+   * @param string/array $apiList 需要使用的JS接口列表
+   * @return string 验证配置对应的js语句,可直接在js脚本中使用
    */
   public function config($apiList) {
     if (is_string($apiList)) {
@@ -52,8 +59,8 @@ class Jssdk {
 
   /**
    * 获取引入js文件的路径
-   * @param string $version - 可选,引入文件的版本号,默认1.0.0
-   * @return string - js文件路径
+   * @param string $version 可选,引入文件的版本号,默认1.0.0
+   * @return string js文件路径
    */
   public function getReference($version = '1.0.0') {
     return "https://res.wx.qq.com/open/js/jweixin-".$version.".js";
@@ -61,8 +68,8 @@ class Jssdk {
 
   /**
    * 获取引入js文件的标签
-   * @param string $version - 可选,引入文件的版本号,默认1.0.0
-   * @return string - js文件标签
+   * @param string $version 可选,引入文件的版本号,默认1.0.0
+   * @return string js文件标签
    */
   public function getReferenceLabel($version = '1.0.0') {
     $reference = $this->getReference($version);
@@ -71,7 +78,7 @@ class Jssdk {
 
   /**
    * 获取权限签名
-   * @return array - 权限签名数组,包含appId、signature等字段
+   * @return array 权限签名数组,包含appId、signature等字段
    */
   public function getSignPackage() {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";

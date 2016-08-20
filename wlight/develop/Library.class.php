@@ -1,29 +1,46 @@
 <?php
 /**
- * 供外部应用调用框架类所用
+ * 可供外部应用导入框架
  * @author  KavMors(kavmors@163.com)
- * @since   2.0
  */
 
 namespace wlight\dev;
 
-include_once (dirname(__FILE__).'/Config.php');
+/********** 加载config.json ****************/
+
+if (!defined('WLIGHT')) {
+  $file = dirname(__FILE__).'/../../runtime/cache/config.json.php';
+  if (!file_exists($file)) {
+    die('配置文件丢失:( 请重新配置Wlight');
+  }
+  $config = file_get_contents($file);
+  $config = trim(strstr($config, '{'));
+  $config = json_decode($config, true);
+  if (!$config) {
+    die('配置文件无效:( 请重新配置Wlight');
+  }
+  foreach ($config as $k => $v) {
+    define ($k, $v);
+  }
+  //execute config
+  date_default_timezone_set(DEFAULT_TIMEZONE);
+}
 
 class Library {
   /**
    * 引入一个类库文件,并返回该类实例对象
-   * @param $namespace - 类所在的空间
-   * @param $className - 类名
-   * @return 实例对象
+   * @param string $namespace 命名空间
+   * @param string $className 类名
+   * @return 实例对象,类名不合法则返回null
   */
   public static function import($namespace, $className) {
     $wholeClass = "\\wlight\\$namespace\\$className";
-    //除了util外,其余类库在/api内
-    if ($namespace!='util') {
+    if ($namespace != 'util' && $namespace != 'statis') {
       $namespace = "api/$namespace";
     }
-    include_once(DIR_ROOT."/wlight/library/$namespace/$className.class.php");
-    $instance = new $wholeClass();
+
+    include_once (DIR_ROOT."/wlight/library/$namespace/$className.class.php");
+    $instance = new $wholeClass;
     return $instance;
   }
 }

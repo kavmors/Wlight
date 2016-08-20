@@ -2,7 +2,6 @@
 /**
  * 提供接收和推送给公众平台消息的加解密接口
  * @author  KavMors(kavmors@163.com)
- * @since   2.0
  */
 
 namespace wlight\core\encrypt;

@@ -2,11 +2,29 @@
 /**
  * Http请求辅助类
  * @author  KavMors(kavmors@163.com)
- * @since   2.0
+ *
+ * void setUrl(string)
+ * void setMethod(string)
+ * void setHeader(array)
+ * void setBody(array/string, boolean)
+ * void addCurlOptions(array)
+ * string exec(integer)
+ * string get(integer)
+ * string post(integer)
+ * string upload(array, array, integer)
+ * integer download(string, integer)
+ * array jsonToArray()
+ * void reset()
+ * array getHeader()
+ * integer getStatus()
+ * string getResponse()
+ * string getMethod()
  */
 
 namespace wlight\util;
 use wlight\runtime\ApiException;
+
+include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
 
 class HttpClient {
   const COMMON_USERAGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.107 Safari/537.36';
@@ -22,13 +40,12 @@ class HttpClient {
   private $curlOptions;
 
   public function __construct($url = '') {
-    include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
     $this->url = $url;
   }
 
   /**
    * 设置请求url
-   * @param string $url - 请求url
+   * @param string $url 请求url
    */
   public function setUrl($url) {
     $this->url = $url;
@@ -36,7 +53,7 @@ class HttpClient {
 
   /**
    * 设置请求方式
-   * @param string $method - GET或POST
+   * @param string $method GET或POST
    */
   public function setMethod($method) {
     $this->method = $method;
@@ -44,7 +61,7 @@ class HttpClient {
 
   /**
    * 设置请求头部
-   * @param array $header - 数组形式的请求头部,以key-value键值对存在
+   * @param array $header 数组形式的请求头部,以key-value键值对存在
    */
   public function setHeader($header) {
     $header['Expect'] = '';
@@ -53,9 +70,9 @@ class HttpClient {
 
   /**
    * 设置请求正文部分
-   * @param array/string $body - 正文内容
+   * @param array/string $body 正文内容
    *        数组形式设置key-value对或字符串形式设置流数据
-   * @param boolean $urlencode - 当$body为array时,true表示需要对每个value进行Urlencode
+   * @param boolean $urlencode 当$body为array时,true表示需要对每个value进行Urlencode
    */
   public function setBody($body, $urlencode=true) {
     if (is_array($body)) {
@@ -71,7 +88,7 @@ class HttpClient {
 
   /**
    * 设置额外的curl选项参数
-   * @param $options 选项数组,键值为CURLOPT_前缀的常量
+   * @param array $options 选项数组,键值为CURLOPT_前缀的常量
    */
   public function addCurlOptions($options) {
     $this->curlOptions = $options;
@@ -79,8 +96,8 @@ class HttpClient {
 
   /**
    * 执行请求
-   * @param integer $timeout - 可选,请求超时时间(默认5s)
-   * @return string - 响应正文
+   * @param integer $timeout 可选,请求超时时间(默认5s)
+   * @return string 响应正文
    */
   public function exec($timeout = 5) {
     $curl = curl_init();
@@ -123,8 +140,8 @@ class HttpClient {
 
   /**
    * 执行get请求
-   * @param integer $timeout - 可选,请求超时时间(默认5s)
-   * @return string - 响应正文
+   * @param integer $timeout 可选,请求超时时间(默认5s)
+   * @return string 响应正文
    */
   public function get($timeout = 5) {
     $this->method = 'GET';
@@ -133,8 +150,8 @@ class HttpClient {
 
   /**
    * 执行post请求
-   * @param integer $timeout - 可选,请求超时时间(默认5s)
-   * @return string - 响应正文
+   * @param integer $timeout 可选,请求超时时间(默认5s)
+   * @return string 响应正文
    */
   public function post($timeout = 5) {
     $this->method = 'POST';
@@ -143,10 +160,10 @@ class HttpClient {
 
   /**
    * 上传文件
-   * @param array $files - 文件参数,形式为(name=>path)的数组
-   * @param array $extraParam - 额外参数,形式为(key=>value)的数组
-   * @param integer $timeout - 可选,请求超时时间(默认30s)
-   * @return string - 请求响应,失败则返回false
+   * @param array $files 文件参数,形式为(name=>path)的数组
+   * @param array $extraParam 额外参数,形式为(key=>value)的数组
+   * @param integer $timeout 可选,请求超时时间(默认30s)
+   * @return string 请求响应,失败则返回false
    */
   public function upload($files, $extraParam=null, $timeout = 30) {
     if (!is_array($files)) {
@@ -173,9 +190,9 @@ class HttpClient {
 
   /**
    * 下载文件(默认GET方式下载,POST需要先设置setMethod及setBody)
-   * @param string $file - 文件路径
-   * @param string $timeout - 下载超时时间,默认30s
-   * @return integer - 文件大小
+   * @param string $file 文件路径
+   * @param integer $timeout 下载超时时间,默认30s
+   * @return integer 文件大小
    */
   public function download($file, $timeout=30) {
     file_put_contents($file, exec($timeout));
@@ -184,19 +201,19 @@ class HttpClient {
 
   /**
    * 将当前响应按JSON解析为数组
-   * @return array - 对象对组
+   * @return array 对象对组
    * @throws ApiException
    */
   public function jsonToArray() {
     if ($this->getStatus()!=200 || $this->getResponse()=='') {
-      throw ApiException::httpException('status code: '.$this->getStatus());
+      throw ApiException::throws(ApiException::HTTP_ERROR_CODE, 'status code: '.$this->getStatus());
       return false;
     }
 
     //解析json结构
     $stream = json_decode($this->getResponse(), true);
     if (!$stream) {
-      throw ApiException::jsonDecodeException('response: '.$this->getResponse());
+      throw ApiException::throws(ApiException::JSON_DECODE_ERROR_CODE, 'response: '.$this->getResponse());
       return false;
     }
 
@@ -211,7 +228,7 @@ class HttpClient {
   /**
    * 清理对象缓存
    */
-  public function clear() {
+  public function reset() {
     $this->url = '';
     $this->method = 'GET';
     $this->reqHeader = null;

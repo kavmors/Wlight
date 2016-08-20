@@ -5,11 +5,10 @@
  *
  * 应用入口文件
  * @author  KavMors(kavmors@163.com)
- * @since   2.0
- * @version 2.2
+ * @version 3.0
  */
 // 检测PHP环境
-if(version_compare(PHP_VERSION,'5.3.0','<'))  die('require PHP > 5.3.0 !');
+if(version_compare(PHP_VERSION,'5.3.0','<')) die('require PHP > 5.3.0 !');
 if(defined('WLIGHT')) die('framework loaded');
 
 //定义平台变量

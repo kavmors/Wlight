@@ -1,14 +1,22 @@
 <?php
 /**
  * 临时素材管理接口
+ * http://mp.weixin.qq.com/wiki/5/963fc70b80dc75483a271298a76a8d59.html
+ * http://mp.weixin.qq.com/wiki/11/07b6b76a6b6e8848e855a435d5e34a5f.html
  * @author  KavMors(kavmors@163.com)
- * @since   2.0
+ *
+ * string upload(string, string)
+ * integer download(string, string)
  */
 
 namespace wlight\media;
 use wlight\basic\AccessToken;
 use wlight\util\HttpClient;
 use wlight\runtime\ApiException;
+
+include_once (DIR_ROOT.'/wlight/library/api/basic/AccessToken.class.php');
+include_once (DIR_ROOT.'/wlight/library/util/HttpClient.class.php');
+include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
 
 class Media {
   private $url = 'https://api.weixin.qq.com/cgi-bin/media';
@@ -18,24 +26,20 @@ class Media {
    * @throws ApiException
    */
   public function __construct() {
-    include_once (DIR_ROOT.'/wlight/library/api/basic/AccessToken.class.php');
-    include_once (DIR_ROOT.'/wlight/library/util/HttpClient.class.php');
-    include_once (DIR_ROOT.'/wlight/library/runtime/ApiException.class.php');
-
     $accessToken = new AccessToken();
     $this->accessToken = $accessToken->get();
   }
 
   /**
    * 上传一个素材
-   * @param string $mediaFile - 完整(绝对路径)文件路径
-   * @param string $type - 可选,上传媒体文件的类型(image、voice、video、thumb),不填则根据后缀名判断
-   * @return string - mediaId媒体id(请求失败返回false)
+   * @param string $mediaFile 完整(绝对路径)文件路径
+   * @param string $type 可选,上传媒体文件的类型(image、voice、video、thumb),不填则根据后缀名判断
+   * @return string mediaId媒体id(请求失败返回false)
    * @throws ApiException
    */
   public function upload($mediaFile, $type=null) {
     if (!file_exists($mediaFile)) {
-      throw ApiException::fileNotExistsException("file: $mediaFile");
+      throw ApiException::throws(ApiException::FILE_NOT_EXISTS_ERROR_CODE, "file: $mediaFile");
       return false;
     }
     if ($type==null) {
@@ -49,7 +53,7 @@ class Media {
     if (isset($result['media_id'])) {
       return $result['media_id'];
     } else {
-      throw ApiException::errorJsonException('response: '.$httpClient->getResponse());
+      throw ApiException::throws(ApiException::ERROR_JSON_ERROR_CODE, 'response: '.$httpClient->getResponse());
     }
 
     //never
@@ -58,9 +62,9 @@ class Media {
 
   /**
    * 下载一个素材
-   * @param string $mediaId - 媒体id,通过上传获得
-   * @param string $toFile - 可选,下载到文件的绝对路径,不填则默认路径为RES_ROOT/$mediaId
-   * @return integer - 下载到的文件大小(失败时返回false)
+   * @param string $mediaId 媒体id,通过上传获得
+   * @param string $toFile 可选,下载到文件的绝对路径,不填则默认路径为RES_ROOT/$mediaId
+   * @return integer 下载到的文件大小(失败时返回false)
    * @throws ApiException
    */
   public function download($mediaId, $toFile=null) {
@@ -71,15 +75,17 @@ class Media {
     $httpClient->get(30);
 
     if ($httpClient->getStatus()!=200 || $httpClient->getResponse()=='') {
-      throw ApiException::httpException('status code: '.$httpClient->getStatus());
+      throw ApiException::throws(ApiException::HTTP_ERROR_CODE, 'status code: '.$httpClient->getStatus());
       return false;
     }
     $header = $httpClient->getHeader();
+    $contentType = $header['Content-Type'][0];
+
     //Content-Type为text/时表示带有errcode错误信息
-    if (!isset($header['Content-Type']) || stripos($header['Content-Type'], 'text')!==false) {
+    if (!isset($header['Content-Type']) || stripos($contentType, 'text')!==false) {
       $result = json_decode($httpClient->getResponse(), true);
       if (!$result) {
-        throw ApiException::jsonDecodeException('response: '.$httpClient->getResponse());
+        throw ApiException::throws(ApiException::JSON_DECODE_ERROR_CODE, 'response: '.$httpClient->getResponse());
       }
       if (isset($result['errcode']) && $result['errcode']!=0) {
         throw new ApiException($result['errmsg'], $result['errcode']);  //非0状态码
@@ -92,7 +98,7 @@ class Media {
           mkdir(RES_ROOT.'/media');
           chmod(RES_ROOT.'/media', 0775);
       }
-      $toFile = RES_ROOT."/media/$mediaId".$this->parseExtension($header['Content-Type']);
+      $toFile = RES_ROOT."/media/$mediaId".$this->parseExtension($contentType);
     }
     file_put_contents($toFile, $httpClient->getResponse());
     return filesize($toFile);

@@ -1,172 +1,174 @@
 <?php
 /**
- * 日志记录类库(仅供Wlight库日志用)
- * @author	KavMors(kavmors@163.com)
- * @since   2.0
+ * 日志记录类库
+ * @author  KavMors(kavmors@163.com)
  */
 
 namespace wlight\runtime;
 use wlight\core\support\RecordManager;
 
+
 class Log {
-  private $logRoot;
-  private static $instance;
+  private static $startTime;
+  private static $isCancel = false;
+  private static $buffer = array();
+  private static $errBuffer = array();
+  private static $warning = null;
 
-  public static function getInstance() {
-    if (self::$instance==null) {
-      self::$instance = new Log();
+  private static $file;
+
+  /**
+   * 脚本开始,初始化Log
+   */
+  public static function start() {
+    self::$startTime = microtime(true);
+    self::$file = RUNTIME_ROOT.'/log/'.date('Y-m-d').'.log.php';
+    if (!file_exists(self::$file)) {
+      self::initFile(self::$file);
     }
-    return self::$instance;
   }
 
-  private $log;
-  private $error;
-  private $msgRecord;   //消息包内容
-
-  private $startTime;
-  private $endTime;
-
-  public function __construct() {
-    $this->logRoot = RUNTIME_ROOT.'/log';
-    $this->clearExpiredLog();
+  /**
+   * 记录本次请求操作为verify
+   */
+  public static function verify() {
+    self::i('Action', "\t\tverify");
   }
 
-  //开始记录
-  public function start() {
-    $this->startTime = microtime(true);
-    $this->log = '';
-    $this->error = '';
-    $this->msgRecord = '';
+  /**
+   * 记录本次请求操作为reply
+   */
+  public static function reply() {
+    self::i('Action', "\t\treply");
   }
 
-  //添加log记录
-  public function i($tag, $msg='') {
-    $this->log .= "\n[ $tag ] $msg";
+  /**
+   * 记录本次请求的时间(来自微信服务器的时间)
+   * @param string $time
+   */
+  public static function createTime($time) {
+    $time = date('Y-m-d H:i:s', $time);
+    self::i('CreateTime', $time);
   }
 
-  //添加error记录
-  public function e($tag, $msg='') {
-    $this->error .= "[ $tag ] $msg\n";
+  /**
+   * 记录剩余接收信息(微信id,消息类型,时间除外)
+   */
+  public static function receive($xml) {
+    $xml = str_ireplace(array("<![CDATA[", "]]>"), "", $xml);
+    $xml = str_ireplace("><", ">\n  <", $xml);
+    self::i('Receive', "  ".$xml);
   }
 
-  //记录消息包内容
-  public function markMsgType($type) {
-    $this->msgRecord .= "[ MsgType ] $type\n";
+  /**
+   * 记录剩余回复信息(微信id,消息类型,时间除外)
+   */
+  public static function response($xml) {
+    $xml = str_ireplace(array("<![CDATA[", "]]>"), "", $xml);
+    $xml = str_ireplace(">\n<", ">\n  <", $xml);
+    self::i('Response', "  ".$xml);
   }
 
-  public function markContent($content) {
-    $this->msgRecord .= "[ Content ] $content\n";
+  /**
+   * 本次请求不记录在log
+   */
+  public static function cancel() {
+    self::$isCancel = true;
   }
 
-  public function markTag($tag) {
-    $this->msgRecord .= "[ Tag ] $tag\n";
-  }
-
-  //结束记录并写入Log
-  public function end() {
-    $this->endTime = microtime(true);
-    $this->writeInfo();
-    $this->writeError();
-  }
-
-  //写Info类信息
-  private function writeInfo() {
-    $file = $this->logRoot.'/info/'.$this->escapeToDate().'.log.php';
-    $writer = new RecordManager($file);
-
-    if ($writer->isCreatedFile()) {
-      $writer->append("\n");
+  /**
+   * 结束脚本,将log写入文件
+   */
+  public static function end() {
+    if (!self::$isCancel) {
+      self::i('Runtime', sprintf("\t\t%.5f (s)", microtime(true)-self::$startTime));
+      $content = implode("\n", self::$buffer);
+      if (count(self::$errBuffer) != 0) {
+        $content .= "\n------------------------------------------------ERROR------------------------------------------------\n";
+        $content .= implode("\n", self::$errBuffer);
+      }
+      if (self::$warning != null) {
+        $content .= "\n-----------------------------------------------WARNING-----------------------------------------------\n";
+        $content .= self::$warning;
+      }
+      file_put_contents(self::$file, "\n\n\n".$content, FILE_APPEND);
     }
-
-    //日志内容
-    $info  = '[ '.$this->escapeToTime().' ]';
-    $info .= $this->log;
-    $info .= "\n";
-    $info .= '[ Runtime: '. $this->getExpTime(). 's ]'."\n\n";
-
-    //写入
-    $writer->append($info);
   }
 
-  //写error类信息
-  private function writeError() {
-    if (empty($this->error)) {
-      return;
+  /**
+   * 记录请求信息log
+   * @param string $tag log标签
+   * @param string $message log信息
+   * @param boolean $pushFirst true表示将本次log的信息置顶
+   */
+  public static function i($tag, $message, $pushFirst=false) {
+    if (strpos($message, "\n") === false) {
+      $content = "[$tag]\t$message";
+    } else {
+      $content = "[$tag]------------------------------\n$message";
     }
-    $file = $this->logRoot.'/error/'.$this->escapeToDate().'.log.php';
-    $writer = new RecordManager($file);
-
-    if ($writer->isCreatedFile()) {
-      $writer->append("\n");
+    if ($pushFirst) {
+      array_unshift(self::$buffer, $content);
+    } else {
+      self::$buffer[] = $content;
     }
-
-    //日志内容
-    $info  = '[ '.$this->escapeToTime().' ]';
-    $info .= "\n";
-    $info .= $this->msgRecord;
-    $info .= $this->error;
-    $info .= "\n";
-
-    //写入
-    $writer->append($info);
   }
 
-  //计算运行时间
-  private function getExpTime() {
-    return sprintf("%.6f", $this->endTime - $this->startTime);
+  /**
+   * 添加exception的log(error)
+   * @param Exception $e
+   * @param array $extra
+   */
+  public static function e($e, $extra=null) {
+    $type = get_class($e);
+    $file = $e->getFile();
+    $code = $e->getCode();
+    $line = $e->getLine();
+    $msg = $e->getMessage();
+    $trace = $e->getTraceAsString();
+
+    $message = "  [Code]\t\t$code\n";
+    $message .= "  [Message]\t$msg\n";
+    $message .= "  [At]\t\t\t$file(Line $line)\n";
+    if (is_array($extra)) {
+      foreach ($extra as $key => $value) {
+        $message .= "  [$key]\t\t$value\n";
+      }
+    }
+    $message .= '  '.str_ireplace("\n", "\n  ", $trace);
+
+    $content = "[$type]------------------------------\n$message";
+    self::$errBuffer[] = $content;
   }
 
-  //转换为日期
-  private function escapeToDate($time=null) {
-    if ($time==null) {
-      $time = $this->startTime;
-    }
-    return date('Y-m-d', intval($time));
+  /**
+   * 记录脚本执行时输出的warning内容
+   * @param string $buffer 脚本输出错误信息
+   */
+  public static function w($buffer) {
+    self::$warning = $buffer;
   }
 
-  //转换为时间
-  private function escapeToTime($time=null) {
-    if ($time==null) {
-      $time = $this->startTime;
-    }
-    return date('H:i:s', intval($time));
+  //log文件不存在时初始化
+  private static function initFile($file) {
+    file_put_contents($file, "<?php exit; ?>");
+    self::clearExpiredLog();
   }
 
   //清理过期日志
-  private function clearExpiredLog() {
-    $expireTime = intval(LOG_LIVE) * 24;  //计算过期时间对应的小时
-    $expireTime = '-'.strval($expireTime).' hour';
-    $expireTime = strtotime($expireTime, time());
-
-    $infoDir = $this->logRoot.'/info';
-    $errorDir = $this->logRoot.'/error';
+  private static function clearExpiredLog() {
+    $expireTime = '-'.LOG_LIVE.' day';
+    $expireDate = date('Y-m-d', strtotime($expireTime, time()));
 
     //列出所有log文件(.log.php)
-    if (is_dir($infoDir)) {
-      $infoDir = asort(glob($infoDir.'/*.log.php'));
-      if (is_array($infoDir)) {
-        foreach ($infoDir as $file) {
-          $fileName = basename($file);
-          $fileName = substr($fileName, 0, stripos($fileName, '.'));  //提取日期
-          if (strtotime($fileName)<$expireTime) {   //文件日期<过期日期时,删除日志文件
-            unlink($file);
-          } else {                 //不满足文件日期<过期日期的文件不删除(排序后)
-            break;
-          }
-        }
-      }
-    }
+    if (is_dir(RUNTIME_ROOT.'/log')) {
+      $logs = glob(RUNTIME_ROOT.'/log/*.log.php');
 
-    if (is_dir($errorDir)) {
-      $errorDir = asort(glob($errorDir.'/*.log.php'));
-      if (is_array($errorDir)) {
-        foreach ($errorDir as $file) {
-          $fileName = basename($file);
-          $fileName = substr($fileName, 0, stripos($fileName, '.'));  //提取日期
-          if (strtotime($fileName)<$expireTime) {   //文件日期<过期日期时,删除日志文件
+      if (is_array($logs) && count($logs)!=0) {
+        foreach ($logs as $file) {
+          $fileDate = basename(substr($file, 0, stripos($file, '.')));
+          if ($fileDate <= $expireDate) {   //文件日期<过期日期时,删除日志文件
             unlink($file);
-          } else {                 //不满足文件日期<过期日期的文件不删除(排序后)
-            break;
           }
         }
       }

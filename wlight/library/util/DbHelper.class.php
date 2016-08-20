@@ -2,7 +2,13 @@
 /**
  * 数据库操作辅助类
  * @author  KavMors(kavmors@163.com)
- * @since   2.0
+ *
+ * void selectDatabase(string)
+ * object getConnector()
+ * object reconnect()
+ * void set(string, string)
+ * string get(string)
+ * void loadDefault()
  */
 
 namespace wlight\util;
@@ -20,8 +26,6 @@ class DbHelper {
   private $user;
   private $pwd;
 
-  private $errorMsg;
-
   //可设置变量
   const CHARSET = 'charset';
   const COLLATION = 'collation';
@@ -34,7 +38,7 @@ class DbHelper {
 
   /**
    * 选择数据库
-   * @param string $dbName - 数据库名称
+   * @param string $dbName 数据库名称
    */
   public function selectDatabase($dbName) {
     $this->set(self::DBNAME, $dbName);
@@ -42,12 +46,13 @@ class DbHelper {
 
   /**
    * 获取数据库连接对象
-   * @return object - PDO连接对象
+   * @return object PDO连接对象
+   * @throws PDOException
    */
   public function getConnector() {
     if ($this->link==null) {
-      $this->checkConfig();
       try {
+        $this->checkConfig();
         $statement = "%s:host=%s;port=%s;dbname=%s";
         $statement = sprintf($statement, $this->type, $this->host, $this->port, $this->dbname);
         $this->link = new \PDO($statement, $this->user, $this->pwd);
@@ -55,8 +60,8 @@ class DbHelper {
         $this->link->exec("set names ".$this->charset);
         $this->link->exec("set time_zone = '+8:00'");
       } catch (\PDOException $e) {
-        $this->errorMsg = $e->getMessage();
-        return null;
+        $this->link = null;
+        throw $e;
       }
     }
     return $this->link;
@@ -64,7 +69,7 @@ class DbHelper {
 
   /**
    * 重新链接数据库
-   * @return object - PDO连接对象
+   * @return object PDO连接对象
    */
   public function reconnect() {
     $this->link = null;
@@ -73,8 +78,8 @@ class DbHelper {
 
   /**
    * 设置配置参数
-   * @param string $key - 参数的变量名,从本类常量中选取
-   * @param string $configValue - 配置参数的值
+   * @param string $key 参数的变量名,从本类常量中选取
+   * @param string $configValue 配置参数的值
    */
   public function set($key, $configValue) {
     $this->$key = $configValue;
@@ -82,8 +87,8 @@ class DbHelper {
 
   /**
    * 获取配置参数
-   * @param string $key - 参数的变量名,从本类常量中选取
-   * @return string - 配置当前值
+   * @param string $key 参数的变量名,从本类常量中选取
+   * @return string 配置当前值
    */
   public function get($key) {
     return $this->$key;
@@ -101,11 +106,6 @@ class DbHelper {
     $this->dbname     = DB_NAME;
     $this->user       = DB_USER;
     $this->pwd        = DB_PWD;
-  }
-
-  //返回连接错误信息
-  public function getError() {
-    return $this->errorMsg;
   }
 
   //检查配置完整性

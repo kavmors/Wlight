@@ -2,8 +2,7 @@
 /**
  * 提供自动回复前和回复执行后的监听接口
  * @author  KavMors(kavmors@163.com)
- * @since   2.2
- * @version 2.2
+ * @version 3.0
  */
 
 namespace wlight\msg;
