@@ -166,12 +166,17 @@ class Message {
    * @throws ApiException
    */
   public function sendNews($user, $articles) {
-    if (isset($articles['Title'])) {
+    if (isset($articles['Title']) || isset($articles['title'])) {
       $articles = array($articles);
     }
-    foreach ($articles as $item) {
-      $item['Title'] = urlencode($item['Title']);
-      $item['Description'] = urlencode($item['Description']);
+    foreach ($articles as $index => $item) {
+      foreach ($item as $k => $v) {
+        $item[strtolower($k)] = $v;
+        unset($item[$k]);
+      }
+      $item['title'] = urlencode($item['title']);
+      $item['description'] = urlencode($item['description']);
+      $articles[$index] = $item;
     }
     $json = array(
       'touser' => $user,

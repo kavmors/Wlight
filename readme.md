@@ -27,11 +27,11 @@ Wlight是一款面向业务逻辑开发的微信公众平台开发框架，包�
 数据库表名变化：
 
 - wlight\_tag -> wlight\_statis\_tag
-- wlight\_tag\_map -> wlight\_statis\_tag\_map
 - wlight\_cache -> wlight\_cache\_msg
 - wlight\_statis\_message(新增)
 - wlight\_cache\_retry(新增)
 - wlight\_cache\_oauth(新增)
+- wlight\_tag\_map(删除)
 
 配置常量变化：
 
@@ -45,6 +45,8 @@ Wlight是一款面向业务逻辑开发的微信公众平台开发框架，包�
 - LOCK\_JSAPI_TICKET(删除)
 
 **3.0起不再支持Memcache，全部改用数据库缓存，如有需要请自行开发。**
+
+**3.0各版本更新内容请参考[Wiki](https://github.com/kavmors/Wlight/wiki/Whatsnew)。**
 
 ## **权限** ##
 

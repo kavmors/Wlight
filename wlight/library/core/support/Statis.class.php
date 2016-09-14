@@ -3,7 +3,7 @@
  * 开发功能统计基础类
  * 用于统计同一功能每天的使用量
  * @author  KavMors(kavmors@163.com)
-  */
+ */
 
 namespace wlight\core\support;
 use wlight\runtime\Log;
@@ -37,6 +37,7 @@ class Statis {
   /**
    * 功能统计总次数增加1
    * @param string $key 功能对应的tag字符值
+   * @param string $map 备注
    */
   public function increase($key, $map) {
     $now = date('Y-m-d', time());
@@ -49,18 +50,22 @@ class Statis {
       //若无$key列则修改表结构
       $result = $this->sql->query($sqlStm);
       if ($result==null || count($result->fetchAll(\PDO::FETCH_ASSOC))==0) {
-        $this->appendCol($key);
+        $this->appendCol($key, $map);
       }
 
       //更新数据
       $sqlStm = "UPDATE `$this->tag` SET `$key` = `$key`+1 WHERE `date` = '$now'";
       //更新数据失败,则添加新的行
       if ($this->sql->exec($sqlStm)==0) {
-        $this->appendRow($key, $now);
+        $this->appendRow($key, $map, $now);
       }
 
-      //更新功能统计对应的描述
-      $this->updateMap($key, $map);
+      //检查数据是否需要更新备注
+      $sqlStm = "SELECT `$key` FROM `$this->tag` WHERE `date` = '$now'";
+      $result = $this->sql->query($sqlStm)->fetchAll(\PDO::FETCH_ASSOC);
+      if (count($result) > 0 && intval($result[0][$key]) == 1) {
+        $this->updateCol($key, $map);
+      }
 
       $this->sql->commit();
     } catch (\PDOException $e) {
@@ -109,19 +114,19 @@ class Statis {
   /**********************/
 
   //更改表结构, 插入新列
-  private function appendCol($key) {
-    $sqlStm = "ALTER TABLE `$this->tag` ADD `$key` int(11) DEFAULT '0'";
+  private function appendCol($key, $map) {
+    $sqlStm = "ALTER TABLE `$this->tag` ADD `$key` int(11) DEFAULT 0 COMMENT '$map'";
     $this->sql->exec($sqlStm);
   }
 
-  private function updateMap($key, $map) {
-    $tableMap = $this->tag.'_map';
-    $this->sql->exec("DELETE FROM `$tableMap` WHERE `key` = '$key'");
-    $this->sql->exec("INSERT INTO `$tableMap` VALUES('$key', '$map')");
+  //更改表结构, 修改字段备注
+  private function updateCol($key, $map) {
+    $sqlStm = "ALTER TABLE `$this->tag` CHANGE `$key` `$key` int(11) DEFAULT 0 COMMENT '$map'";
+    $this->sql->exec($sqlStm);
   }
 
   //添加新行()
-  private function appendRow($key, $now) {
+  private function appendRow($key, $map, $now) {
     //插入新行
     $sqlStm = "INSERT INTO `$this->tag` (`date`, `$key`) VALUES ('$now', 1)";
     $this->sql->exec($sqlStm);
@@ -154,7 +159,7 @@ class Statis {
 
     //修改字段表达方式
     foreach ($lists as $key => $value) {
-      $lists[$key] = "MAX(`$value[key]`) AS `$value[key]`";
+      $lists[$key] = "MAX(`$value[Field]`) AS `$value[Field]`";
     }
     $lists = implode(', ', $lists);
 
@@ -173,15 +178,12 @@ class Statis {
 
   //更改表结构, 删除一列
   private function removeCol($key) {
-    $tableMap = $this->tag.'_map';
     $this->sql->exec("ALTER TABLE `$this->tag` DROP COLUMN `$key`");
-    $this->sql->exec("DELETE FROM `$tableMap` WHERE `key` = '$key'");
   }
 
   //获取所有列字段名
   private function getAllList() {
-    $tableMap = $this->tag.'_map';
-    $sqlStm = "SELECT `key` FROM `$tableMap`";
+    $sqlStm = "DESC `$this->tag`";
     $result = $this->sql->query($sqlStm);
     if ($result!=null) {
       return $result->fetchAll(\PDO::FETCH_ASSOC);

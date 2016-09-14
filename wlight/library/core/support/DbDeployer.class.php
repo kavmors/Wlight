@@ -38,12 +38,12 @@ class DbDeployer {
 
     // Connect
     try {
-    	$helper = new DbHelper();
-    	$helper->set(DbHelper::TYPE, 'mysql');
-    	$helper->set(DbHelper::DBNAME, '');      //首次操作不指定数据库
-    	$link = $helper->getConnector();
+      $helper = new DbHelper();
+      $helper->set(DbHelper::TYPE, 'mysql');
+      $helper->set(DbHelper::DBNAME, '');      //首次操作不指定数据库
+      $link = $helper->getConnector();
     } catch (\PDOException $e) {
-    	echo 'Failed to connect database server.';
+      echo 'Failed to connect database server.';
       return false;
     }
 
@@ -75,12 +75,6 @@ class DbDeployer {
         `date` date COLLATE $collation NOT NULL COMMENT '日期',
         PRIMARY KEY(`date`)
       ) COMMENT='功能统计'");
-
-      $link->exec("CREATE TABLE IF NOT EXISTS `$map` (
-        `key` varchar(50) COLLATE $collation NOT NULL,
-        `map` varchar(50) COLLATE $collation NOT NULL,
-        PRIMARY KEY(`key`)
-      ) COMMENT='功能描述'");
 
       $link->exec("CREATE TABLE IF NOT EXISTS `$message` (
           `wechat_id` char(30) COLLATE $collation NOT NULL COMMENT 'FromUserName',

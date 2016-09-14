@@ -7,7 +7,7 @@
  * array getMessage(array)
  */
 
-namespace wlight\statis;
+namespace wlight\common;
 use wlight\util\DbHelper;
 
 include_once (DIR_ROOT.'/wlight/library/util/DbHelper.class.php');
@@ -15,7 +15,6 @@ include_once (DIR_ROOT.'/wlight/library/util/DbHelper.class.php');
 class Statis {
   private $db;
   private $tag;
-  private $tagMap;
   private $message;
 
   /**
@@ -26,7 +25,6 @@ class Statis {
       $helper = new \wlight\util\DbHelper();
       $this->db = $helper->getConnector();
       $this->tag = DB_PREFIX.'_statis_tag';
-      $this->tagMap = $this->tag.'_map';
       $this->message = DB_PREFIX.'_statis_message';
     } catch (\PDOException $e) {
       $this->sql = null;
@@ -39,10 +37,12 @@ class Statis {
    * @param string date 可选,查询日期,格式如YYYY-mm-dd
    */
   public function getTag($date = null) {
-    $result = $this->db->query("SELECT * FROM `$this->tagMap` WHERE 1");
+    $dbname = DB_NAME;
+    $result = $this->db->query("SELECT `COLUMN_NAME` AS `key`, `COLUMN_COMMENT` AS `map` FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = '$dbname' AND `TABLE_NAME` = '$this->tag'");
     $result = $result->fetchAll(\PDO::FETCH_ASSOC);
     $mapper = array();
     if (is_array($result)) {
+      array_shift($result);    //删除'日期'一列
       foreach ($result as $row) {
         $mapper[$row['key']] = array('tag'=>$row['map'], 'data'=>array());
       }

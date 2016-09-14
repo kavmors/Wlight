@@ -8,11 +8,11 @@
  * void setHeader(array)
  * void setBody(array/string, boolean)
  * void addCurlOptions(array)
- * string exec(integer)
- * string get(integer)
- * string post(integer)
- * string upload(array, array, integer)
- * integer download(string, integer)
+ * string exec(integer/float)
+ * string get(integer/float)
+ * string post(integer/float)
+ * string upload(array, array, integer/float)
+ * integer download(string, integer/float)
  * array jsonToArray()
  * void reset()
  * array getHeader()
@@ -96,7 +96,7 @@ class HttpClient {
 
   /**
    * 执行请求
-   * @param integer $timeout 可选,请求超时时间(默认5s)
+   * @param integer/float $timeout 可选,请求超时时间(默认5s)
    * @return string 响应正文
    */
   public function exec($timeout = 5) {
@@ -125,8 +125,14 @@ class HttpClient {
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
-    curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, $timeout);
-    curl_setopt($curl, CURLOPT_TIMEOUT, $timeout);
+    if (is_int($timeout)) {      //by second
+      curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, $timeout);
+      curl_setopt($curl, CURLOPT_TIMEOUT, $timeout);
+    } elseif (is_float($timeout)) {      //by millisecond
+      $timeout = intval($timeout * 1000);
+      curl_setopt($curl, CURLOPT_CONNECTTIMEOUT_MS, $timeout);
+      curl_setopt($curl, CURLOPT_TIMEOUT_MS, $timeout);
+    }
     curl_setopt($curl, CURLOPT_USERAGENT, self::COMMON_USERAGENT);
     if ($this->method=='POST') {
       curl_setopt($curl, CURLOPT_POST, 1);
@@ -140,7 +146,7 @@ class HttpClient {
 
   /**
    * 执行get请求
-   * @param integer $timeout 可选,请求超时时间(默认5s)
+   * @param integer/float $timeout 可选,请求超时时间(默认5s)
    * @return string 响应正文
    */
   public function get($timeout = 5) {
@@ -150,7 +156,7 @@ class HttpClient {
 
   /**
    * 执行post请求
-   * @param integer $timeout 可选,请求超时时间(默认5s)
+   * @param integer/float $timeout 可选,请求超时时间(默认5s)
    * @return string 响应正文
    */
   public function post($timeout = 5) {
@@ -162,7 +168,7 @@ class HttpClient {
    * 上传文件
    * @param array $files 文件参数,形式为(name=>path)的数组
    * @param array $extraParam 额外参数,形式为(key=>value)的数组
-   * @param integer $timeout 可选,请求超时时间(默认30s)
+   * @param integer/float $timeout 可选,请求超时时间(默认30s)
    * @return string 请求响应,失败则返回false
    */
   public function upload($files, $extraParam=null, $timeout = 30) {
@@ -191,10 +197,10 @@ class HttpClient {
   /**
    * 下载文件(默认GET方式下载,POST需要先设置setMethod及setBody)
    * @param string $file 文件路径
-   * @param integer $timeout 下载超时时间,默认30s
+   * @param integer/float $timeout 下载超时时间,默认30s
    * @return integer 文件大小
    */
-  public function download($file, $timeout=30) {
+  public function download($file, $timeout = 30) {
     file_put_contents($file, exec($timeout));
     return filesize($file);
   }

@@ -35,7 +35,7 @@ class Library {
   */
   public static function import($namespace, $className) {
     $wholeClass = "\\wlight\\$namespace\\$className";
-    if ($namespace != 'util' && $namespace != 'statis') {
+    if ($namespace != 'util' && $namespace != 'common') {
       $namespace = "api/$namespace";
     }
 
